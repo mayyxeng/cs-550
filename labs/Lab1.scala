@@ -29,27 +29,21 @@ object SubList {
     subList(l, l)
   )
 
-  
-
-  
-    def subListTail[T](l1: List[T], l2: List[T]): Unit = {
-        require(!l1.isEmpty && subList(l1, l2))
-        (l1, l2) match {
-            case (Cons(x, xs), Cons(y, ys)) =>
-                if (subList(l1, ys)) {
-                    subListTail(l1, ys)
-                    ()
-                } else {            
-                    ()
-                }
-        }
-    }.ensuring(_ =>
-        subList(l1.tail, l2)
-    )  
+  def subListTail[T](l1: List[T], l2: List[T]): Unit = {
+      require(!l1.isEmpty && subList(l1, l2))
+      (l1, l2) match {
+          case (Cons(x, xs), Cons(y, ys)) =>
+              if (subList(l1, ys)) {
+                  subListTail(l1, ys)
+                  ()
+              } else {            
+                  ()
+              }
+      }
+  }.ensuring(_ =>
+      subList(l1.tail, l2)
+  )  
     
-
-  
-
   def subListTails[T](l1: List[T], l2: List[T]): Unit = {
     require(!l1.isEmpty && !l2.isEmpty && l1.head == l2.head && subList(l1, l2))
 
@@ -83,20 +77,6 @@ object SubList {
   }.ensuring(_ =>
     subList(l1.tail, l2.tail)
   )
- 
-  def extendSubList[T](l1: List[T], l2: List[T], x: T): Unit = {
-    require(subList(l1, l2))
-
-  }.ensuring(_ =>
-    subList(x::l1, x::l2)
-  )
-
-  def extendSubList2[T](l1: List[T], l2: List[T], x: T): Unit = {
-    require(subList(l1, l2))
-
-  }.ensuring(_ =>
-    subList(l1, x::l2)
-  )
 
   def subListTrans[T](l1: List[T], l2: List[T], l3: List[T]): Unit = {
     require(subList(l1, l2) && subList(l2, l3))
@@ -113,22 +93,20 @@ object SubList {
 
             if (subList(l1, l2.tail)) {
                 subListTrans(l1,l2.tail,l3.tail)
-                extendSubList2(l1,l3.tail,l3.head)
             } else {
                 assert(l1.head == l2.head)
                 if (subList(l2, l3.tail)) {
                     subListTrans(l1,l2,l3.tail)
-                    extendSubList2(l1,l3.tail,l3.head)
                 } else {
                     
                 }
-            }
-            
+            } 
     }
  
   }.ensuring(_ =>
     subList(l1, l3)
   )
+ 
  
   def subListLength[T](l1: List[T], l2: List[T]): Unit = {
     require(subList(l1, l2))
@@ -173,7 +151,6 @@ object SubList {
             subListPrecond(l1,l2.tail)
             assert(l1.head == l2.head)
             subListEqual(l1.tail,l2.tail)
-
     }
  
   }.ensuring(_ =>
@@ -185,7 +162,7 @@ object SubList {
 
     subListLength(l2,l1)
     subListEqual(l1,l2)
- 
+
   }.ensuring(_ =>
     l1 == l2
   )
