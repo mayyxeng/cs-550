@@ -61,7 +61,7 @@ object SubList {
     subList(l1.tail, l2.tail)
   )
 
-  def subListTailss[T](l1: List[T], l2: List[T]): Unit = {
+  def subListTailsGeneral[T](l1: List[T], l2: List[T]): Unit = {
     require(!l1.isEmpty && !l2.isEmpty && subList(l1, l2))
 
     (l1, l2) match {
@@ -86,8 +86,8 @@ object SubList {
         case (Nil(), _, _) =>
             ()
         case (Cons(x, xs), Cons(y, ys), Cons(z, zs)) =>
-            subListTailss(l1,l2)
-            subListTailss(l2,l3)
+            subListTailsGeneral(l1,l2)
+            subListTailsGeneral(l2,l3)
             subListTrans(l1.tail, l2.tail, l3.tail)
             assert(subList(l1.tail, l3.tail))
 
@@ -115,7 +115,7 @@ object SubList {
         case (Nil()) =>
             ()
         case (Cons(x,xs)) =>
-            subListTailss(l1,l2)
+            subListTailsGeneral(l1,l2)
             subListLength(l1.tail, l2.tail)
     }
  
@@ -147,7 +147,7 @@ object SubList {
         case (Nil()) => 
             ()
         case (Cons(x,xs)) =>
-            subListTailss(l1, l2)
+            subListTailsGeneral(l1, l2)
             subListPrecond(l1,l2.tail)
             assert(l1.head == l2.head)
             subListEqual(l1.tail,l2.tail)
