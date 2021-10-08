@@ -4,20 +4,60 @@ object Lab02 {
 
   // -------- Part 1 -------------
   def search(arr: Array[Int], x: Int, lo: Int, hi: Int): Boolean = {
-    require(true) // Find the minimal set of preconditions
-    decreases(-1) // Find the correct mesure
-    if (lo <= hi) {
-      val i = lo + hi
-      val y = arr(i)
-      if (x == y) true
-      else if (x < y) search(arr, x, lo, i - 1)
-      else search(arr, x, i + 1, hi)
+    
+    require(hi < arr.length)
+    require(lo >= 0)
+    require(hi >= 0)
+    
+    decreases(if (lo < hi) (hi - lo) else 0) 
+    if (lo < hi) {
+      if (x == arr(hi) || x == arr(lo)) true // checks the boundaries
+      else { // if not found in the boundaries
+        val i: Int = (hi - lo) / 2 + lo // (hi + lo) / 2 can cause overflow
+        val y = arr(i)
+        if (i == 0 || i == arr.length - 1) false 
+        else if (x == y) true
+        else if (x < y) {
+            search(arr, x, lo, i - 1)
+        } else  {
+            // assert((i + 1) >= 0 && (i + 1) < arr.length)
+            search(arr, x, i + 1, hi)   
+        }
+      }
+    } else if (lo == hi) {
+      x == arr(lo)
     } else {
       false
     }
   }
+    // -------- Part 1 -------------
+//   def search(arr: Array[Int], x: Int, lo: Int, hi: Int): Boolean = {
+    
+//     require(lo >= 0)
+//     require(hi >= 0)
+//     // require(lo < arr.length)
+//     require(hi < arr.length)
+//     // require(hi > lo + 1)
+//     require( if (hi < lo) (lo - hi) >= 2 else (hi - lo) >= 2)
+//     decreases(-1) // Find the correct mesure
+//     if (lo <= hi) {
+//       val i = {
+//           if (lo == hi)
+//         (hi - lo) / 2 + lo
+
+//       }
+//       val y = arr(i)
+//       if (x == y) true
+//       else if (x < y) search(arr, x, lo, i - 1)
+//       else search(arr, x, i + 1, hi)
+//     } else {
+//       false
+//     }
+//   }
 
   // -------- Part 2 -------------
+
+
 
   sealed abstract class Tree[T]
 
@@ -65,16 +105,21 @@ object Lab02 {
     }
   } ensuring (_ => forall(insert(t, x), p))
 
+  
   def orderedAfterInsert(t: Tree[BigInt], x: BigInt): Unit = {
     require(isOrdered(t))
     t match {
       case Leaf() => ()
       case Node(root, left, right) if (root > x) =>
-        // ???
-        assert(isOrdered(insert(t, x)))
+    
+        forallAfterInsert(left, x, n => n <= root)
+        orderedAfterInsert(left,  x)
+        
       case Node(root, left, right) if (x > root) =>
-        // ???
-        assert(isOrdered(insert(t, x)))
+        
+        forallAfterInsert(right, x, n => n >= root)
+        orderedAfterInsert(right,  x)
+        
       case _ => ()
     }
   } ensuring (_ => isOrdered(insert(t, x)))
