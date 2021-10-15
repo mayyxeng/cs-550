@@ -57,12 +57,42 @@ object Lab03 {
   /* Evaluation coincides with instantiation: evaluate(env, F) == evaluate(env, F[x:=env(x)] */
   def instantiationIdentityLemma(env:Environment, f:Formula, id:Identifier) :Unit = {
     require(env.contains(id) && evaluate(env, f).nonEmpty)
+    
+    f match {
+      case And(left,right) => 
+        instantiationIdentityLemma(env,left,id)
+        instantiationIdentityLemma(env,right,id)
+      case Or(left,right) => 
+        instantiationIdentityLemma(env,left,id)
+        instantiationIdentityLemma(env,right,id)
+      case Iff(left,right) => 
+        instantiationIdentityLemma(env,left,id)
+        instantiationIdentityLemma(env,right,id)
+      case Not(inner) => 
+        instantiationIdentityLemma(env,inner,id)
+      case _ => ()
+    }
 
   }.ensuring(evaluate(env, instantiation(f, id, env(id))) == evaluate(env, f))
 
   /* Instantiating a variable can't make an evaluation ill-defined if it was well-defined */
   def instantiateStillDefinedLemma(env:Environment, f:Formula, id:Identifier, value:Boolean):Unit = {
     require(evaluate(env, f).isDefined)
+
+    f match {
+      case And(left,right) => 
+        instantiateStillDefinedLemma(env,left,id,value)
+        instantiateStillDefinedLemma(env,right,id,value)
+      case Or(left,right) => 
+        instantiateStillDefinedLemma(env,left,id,value)
+        instantiateStillDefinedLemma(env,right,id,value)
+      case Iff(left,right) => 
+        instantiateStillDefinedLemma(env,left,id,value)
+        instantiateStillDefinedLemma(env,right,id,value)
+      case Not(inner) =>
+        instantiateStillDefinedLemma(env,inner,id,value)
+      case _ => ()
+    }
 
   }.ensuring(evaluate(env, instantiation(f, id, value)).isDefined)
 
