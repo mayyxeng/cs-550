@@ -96,23 +96,22 @@ object Lab03 {
 
   }.ensuring(evaluate(env, instantiation(f, id, value)).isDefined)
 
-  @extern
-  def stupidOrLemma(env:Environment,f:Formula,g:Formula):Unit = {
-    require(evaluate(env,f) == Some(true))
-  }.ensuring(evaluate(env, Or(f,g)) == Some(true))
-
   /* The case analysis proof step ( F, G ==> F[x:=1]\/G[y:=0] ) is sound */
   def caseAnalysisSoundness(env:Environment, f:Formula, g:Formula, id:Identifier):Unit = {
     require(env.contains(id) && evaluate(env, f)==Some(true) && evaluate(env, g)==Some(true))
 
-    instantiationIdentityLemma(env,f,id)
-    instantiationIdentityLemma(env,g,id)
-
     env(id) match {
       case true => 
-        stupidOrLemma(env,instantiation(f,id,true),instantiation(g,id,false))
+        instantiationIdentityLemma(env,f,id)
+        assert(evaluate(env,instantiation(f,id,true)) == Some(true))
+        instantiateStillDefinedLemma(env,g,id,false)
+        assert(evaluate(env,instantiation(g,id,false)).isDefined)
       case false => 
-        stupidOrLemma(env,instantiation(g,id,false),instantiation(f,id,true))    }
+        instantiationIdentityLemma(env,g,id)
+        assert(evaluate(env,instantiation(g,id,false)) == Some(true))
+        instantiateStillDefinedLemma(env,f,id,true)
+        assert(evaluate(env,instantiation(f,id,true)).isDefined)
+    }
 
   }.ensuring(evaluate(env, Or(instantiation(f, id, true), instantiation(g, id, false)))==Some(true))
 
