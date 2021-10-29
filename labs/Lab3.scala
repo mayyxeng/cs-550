@@ -49,7 +49,7 @@ object Lab03 {
     case Iff(left, right) => Iff(instantiation(left, id, value), instantiation(right, id, value))
     case Not(inner) => Not(instantiation(inner, id, value))
   }
-
+ 
   /* --------------- Lemmas -------------- */
   /* You may need to define and prove auxilliary lemmas */
 
