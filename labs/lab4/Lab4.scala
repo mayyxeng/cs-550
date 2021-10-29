@@ -42,6 +42,18 @@ object Lab04 {
     case Function(name, children) =>
       Function(name, children.map(substitute(_, subst)))
   }
+
+  def substitute(f: Formula, subst: Map[Var, Term]): Formula = f match {
+    case Predicate(name, children) =>
+      Predicate(name, children.map(substitute(_, subst)))
+    case And(children) => And(children.map(substitute(_, subst)))
+    case Or(children)  => Or(children.map(substitute(_, subst)))
+    case Implies(left, right) =>
+      Implies(substitute(left, subst), substitute(right, subst))
+    case Neg(inner)       => Neg(substitute(inner, subst))
+    case Forall(v, inner) => Forall(v, substitute(inner, subst))
+    case Exists(v, inner) => Exists(v, substitute(inner, subst))
+  }
   //We don't need substitution in Formulas, which conveniently avoid having to implement capture avoiding substitution.
 
   /*
@@ -121,36 +133,45 @@ object Lab04 {
   /*
     Put the formula in negation normal form and then eliminates existential quantifiers using Skolemization
    */
+
+
   def skolemizationNegation(f: Formula): Formula = {
-    
-    var ix = 0
-    def freshName(fvs: Set[Var])(prefix: String = "$"): String = {
-      val fresh_name = prefix + "_" + ix
-      ix = ix +1
-      if (fvs.map(_.name).contains(fresh_name)) {
-        freshName(fvs)(prefix)
-      } else {
-        fresh_name
-      }
-    }
-    def collectReplace(g: Formula)(subst: Map[Var, Term]): Formula = {
 
+
+    def skolemize(g: Formula): Formula = {
       g match {
-        case Exists(variable, inner) => 
+        case Exists(variable, inner) =>
+          // because `makeVariableNamesUnique is called before we get here, we
+          // know that the variable name is unique already, so no need to create
+          // new names..
           val fvs = freeVariables(inner)
-          val fresh_name = freshName(fvs)("$")
-          if (freeVariables(inner).isEmpty) {
-            // constant function
-            val new_subts = subst + (Var(fresh_name) -> Var(fresh_name))
-            collectReplace(substitute(inner)(new_subts)
+          if (fvs.nonEmpty) {
+
+            skolemize(
+              substitute(
+                inner,
+                Map(Var(variable) -> Function(variable, fvs.toList))
+              )
+            )
           } else {
-            
+            // contant function, can keep the variable as is
+            skolemize(inner)
           }
+
+        case Forall(variable, inner) => Forall(variable, skolemize(inner))
+        case Or(children)            => Or(children.map(skolemize))
+        case And(children)           => And(children.map(skolemize))
+        case Neg(inner) =>
+          Neg(skolemize(inner))
+        case Predicate(name, children) => g
+        case Implies(_, _) =>
+          throw new RuntimeException(
+            "Can only Skolemize NNF! Implication not allowed"
+          )
       }
-      ???
     }
 
-    collectAndReplace(negationNormalForm(f))(Set())
+    skolemize(makeVariableNamesUnique(negationNormalForm(f)))
   }
 
   /*
@@ -158,7 +179,19 @@ object Lab04 {
     quantifiers and all variable names are unique, the matrix is equivalent to the whole formula.
    */
   def prenexSkolemizationNegation(f: Formula): Formula = {
-    ???
+    
+    def transform(g: Formula): Formula = {
+
+      g match {
+        case Forall(variable, inner) => transform(inner)
+        case And(children) => And(children.map(transform))
+        case Or(children) => Or(children.map(transform))
+        case Neg(inner) => Neg(transform(inner))
+        case _ => throw new RuntimeException("prenex transform comes after Skoleminzation!")
+      }
+    }
+
+    transform(f)
   }
 
   type Clause = List[Formula]
@@ -190,11 +223,11 @@ object Lab04 {
   }
 
   // val a = Function("a", Nil)
-  // val b = Function("b", Nil)
+  // val b = Function("b  ", Nil)
   // val c = Function("c", Nil)
   // val x = Var("x")
   // val y = Var("y")
-  // val y = Var("z")
+  // val y = Var("z")g
   // def lives(a: Term) = Predicate("lives", List(a))
   // def killed(a: Term, b: Term) = Predicate("killed", List(a, b))
   // def hates(a: Term, b: Term) = Predicate("hates", List(a, b))
