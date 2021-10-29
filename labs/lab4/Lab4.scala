@@ -233,7 +233,7 @@ object Lab04 {
       }
     }
 
-    transform(f)
+    transform(skolemizationNegation(f))
   }
 
   type Clause = List[Formula]
@@ -250,7 +250,7 @@ object Lab04 {
     If we only preserve satisfiability, we can avoid it by introducing fresh predicates, but that is not asked here.
    */
   def conjunctionPrenexSkolemizationNegation(f: Formula): List[Clause] = {
-   
+
     def transformToBinOp(g: Formula): Formula = {
       g match {
         case Or(children) =>
@@ -281,7 +281,7 @@ object Lab04 {
         case Predicate(_, _) | Neg(_) => g
         case And(List(a, b))          => And(List(pushInOrs(a), pushInOrs(b)))
         case Or(List(a, b))           => Or(List(pushInOrs(a), pushInOrs(b)))
-        case _ =>
+        case _                        =>
           // printTree(g)(2)
           throw new RuntimeException("Fucked up")
       }
@@ -309,24 +309,70 @@ object Lab04 {
         fixedPoint(transformed)
       }
     }
+
+    def transformUnbinaryOp(tree: Formula): Formula = {
+      def collectOrChildren(
+          children: List[Formula],
+          accum: List[Formula] = Nil
+      ): List[Formula] = {
+        children.foldLeft(accum) { case (acc, x) =>
+          x match {
+            case Or(ch) => collectOrChildren(ch, acc)
+            case _      => acc :+ x
+          }
+        }
+      }
+
+      def collectAndChildren(
+          children: List[Formula],
+          accum: List[Formula] = Nil
+      ): List[Formula] = {
+        children.foldLeft(accum) { case (acc, x) =>
+          x match {
+            case And(ch) => collectAndChildren(ch, acc)
+            case _       => acc :+ x
+          }
+        }
+      }
+      tree match {
+        case o @ Or(children)         => Or(collectOrChildren(children))
+        case a @ And(children)        => And(collectAndChildren(children))
+        case Neg(_) | Predicate(_, _) => tree
+
+      }
+
+    }
     println("Orignal tree")
     // printTree(f)(2)
     println("End orig")
-    val bin_tree = transformToBinOp(f)
+    val bin_tree = transformToBinOp(prenexSkolemizationNegation(f))
+
     println("Binary Op tree:")
     // printTree(bin_tree)(2)
     println("End of binary tree")
     val cnf = fixedPoint(bin_tree)
-    def collectClauses(cnf: Formula)(clauses: List[Clause]): List[Clause] = {
+
+    val unbin_cnf = transformUnbinaryOp(cnf)
+    println("Unbin cnf")
+    printTree(unbin_cnf)(2)
+    println("Unbin cnf end")
+
+    def collectClauses(cnf: Formula): List[Clause] = {
 
       cnf match {
-        case And(List(a, b)) =>
-          collectClauses(b)(clauses ++ collectClauses(a)(clauses))
-        case Predicate(_, _) | Neg(_) | Or(_) => List(cnf) +: clauses
+        case And(ls) =>
+          ls.foldLeft(List.empty[Clause]) { case (acc, x) =>
+            x match {
+              case Or(clause) => List(clause) ++ acc
+              case _          => List(List(x)) ++ acc
+            }
+          }
+        case Or(ls) => List(ls) // single clause
+
       }
 
     }
-    collectClauses(cnf)(List()).toSet.toList
+    collectClauses(unbin_cnf)
   }
   /*
     A clause in a proof is either assumed, i.e. it is part of the initial formula, or it is deduced from previous clauses.
@@ -344,6 +390,7 @@ object Lab04 {
 
    */
   def checkResolutionProof(proof: ResolutionProof): Boolean = {
+    
     ???
   }
 
@@ -436,27 +483,21 @@ object Lab04 {
 object Runner extends App {
   import Lab04._
 
-  val f = exampleFromCourse
+  // println("Clauses: ")
+  // val r4 = conjunctionPrenexSkolemizationNegation(exampleFromCourse)
 
-  println("Unique names:")
-  val r0 = makeVariableNamesUnique(f)
-  printTree(r0)(1)
-  println("NNF:")
-  val r1 = negationNormalForm(f)
-  // printTree(r1)(1)
-  println("Skolem:")
-  val r2 = skolemizationNegation(r1)
-  printTree(r2)(1)
-
-  println("PrenexSkolem:")
-  val r3 = prenexSkolemizationNegation(r2)
-  printTree(r3)(1)
-
-  println("Clauses: ")
-  val r4 = conjunctionPrenexSkolemizationNegation(r3)
-
-  
-  r4.foreach { printClause(_) }
+  // r4.foreach { printClause(_) }
   // // val f =
   // println("Hello")
+
+  val xx = Var("xx")
+  val yy = Var("yy")
+  def var_eq(a: Var, b: Var) = Predicate("=", List(a, b))
+  val eq_assumption =
+    Forall("xx", Forall("yy", Implies(var_eq(xx, yy), var_eq(yy, xx))))
+
+  // printTree(negationNormalForm(eq_assumption))(2)
+  val r5 = conjunctionPrenexSkolemizationNegation(eq_assumption)
+  r5.foreach { printClause(_) }
+
 }
