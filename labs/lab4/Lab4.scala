@@ -1,4 +1,5 @@
 import java.text.Normalizer.Form
+import java.util.Base64.Decoder
 object Lab04 {
 
   // Term syntax
@@ -181,9 +182,9 @@ object Lab04 {
           // new names..
           val fvs = freeVariables(g)
           // if (fvs.nonEmpty) {
-          println(s"Free vars ${fvs} of tree")
-          printTree(g)(4)
-          println("END")
+          // println(s"Free vars ${fvs} of tree")
+          // printTree(g)(4)
+          // println("END")
           skolemize(
             substitute(
               inner,
@@ -225,8 +226,8 @@ object Lab04 {
         case Neg(inner)              => Neg(transform(inner))
         case Predicate(_, _)         => g
         case _ =>
-          println("We fucked up")
-          // printTree(g)(2)
+          
+          printTree(g)(2)
           throw new RuntimeException(
             "prenex transform comes after Skoleminzation!"
           )
@@ -282,8 +283,8 @@ object Lab04 {
         case And(List(a, b))          => And(List(pushInOrs(a), pushInOrs(b)))
         case Or(List(a, b))           => Or(List(pushInOrs(a), pushInOrs(b)))
         case _                        =>
-          // printTree(g)(2)
-          throw new RuntimeException("Fucked up")
+          printTree(g)(2)
+          throw new RuntimeException("Something went wrong")
       }
     }
 
@@ -300,6 +301,8 @@ object Lab04 {
           case (Predicate(tv, ts), Predicate(gv, gs)) =>
             (tv == gv) && (ts == gs)
           case (Neg(ti), Neg(gi)) => equalTrees(ti, gi)
+          case _ => false
+            
         }
       }
 
@@ -342,21 +345,14 @@ object Lab04 {
       }
 
     }
-    println("Orignal tree")
-    // printTree(f)(2)
-    println("End orig")
+   
     val bin_tree = transformToBinOp(prenexSkolemizationNegation(f))
 
-    println("Binary Op tree:")
-    // printTree(bin_tree)(2)
-    println("End of binary tree")
+   
     val cnf = fixedPoint(bin_tree)
 
     val unbin_cnf = transformUnbinaryOp(cnf)
-    println("Unbin cnf")
-    printTree(unbin_cnf)(2)
-    println("Unbin cnf end")
-
+   
     def collectClauses(cnf: Formula): List[Clause] = {
 
       cnf match {
@@ -390,8 +386,51 @@ object Lab04 {
 
    */
   def checkResolutionProof(proof: ResolutionProof): Boolean = {
-    
-    ???
+
+    def checkJustification(
+        step: (Clause, Justification),
+        index: Int
+    ): Boolean = {
+
+      val (clause, justification) = step
+      
+      justification match {
+        case Assumed => true // don't check how it was derived.
+        case Deduced((i, j), subst) if (i < index && j < index) =>
+          val left_premice: Clause = proof(i)._1.map(substitute(_, subst))
+          val right_premice: Clause = proof(j)._1.map(substitute(_, subst))
+          // left_premice should be Cl \cup L and right_premise should be Cr \cup ~L
+          // we can do this by making the product of the clauses and checking
+          // every pair of literals
+
+          val prod = left_premice
+            .flatMap { x => right_premice.map { y => (x, y) } }
+          println(s"Checking ${step} at ${index}")
+          prod.foreach { p => println(s"${p._1}\t${p._2}") }
+          val l = prod
+            .filter { case (lit1, lit2) =>
+              println(s"Checking pairs ${lit1} and ${lit2}")
+              val c1 = lit1 == Neg(lit2)
+              val c2 = lit2 == Neg(lit1)
+              c1 || c2
+            }
+          l match {
+            case List((l1, l1n)) =>
+              def notUnitLit(x: Formula): Boolean = (x != l1 && x != l1n)
+              (left_premice.filter { notUnitLit } ++
+                right_premice.filter { notUnitLit }).toSet == clause.toSet
+            case _ => false
+          }
+        case _ => false
+      }
+    }
+
+    proof.zipWithIndex.forall { case (step, ix) =>
+      println(s"Checking justification ${ix}")
+      checkJustification(step, ix)
+      
+    }
+
   }
 
   val a = Function("a", Nil)
@@ -430,7 +469,7 @@ object Lab04 {
       Forall("x", Implies(hates(b, x), Neg(richer(x, a)))),
       Forall("x", Implies(Neg(richer(x, a)), hates(b, x))),
       Forall("x", Implies(hates(a, x), hates(b, x))),
-      Neg(Exists("x", Forall("y", hates(x, y)))),
+      Neg(Forall("x", Exists("y", hates(x, y)))),
       Neg(eq(a, b))
     )
   )
@@ -490,14 +529,299 @@ object Runner extends App {
   // // val f =
   // println("Hello")
 
-  val xx = Var("xx")
-  val yy = Var("yy")
-  def var_eq(a: Var, b: Var) = Predicate("=", List(a, b))
-  val eq_assumption =
-    Forall("xx", Forall("yy", Implies(var_eq(xx, yy), var_eq(yy, xx))))
+  // val xx = Var("xx")
+  // val yy = Var("yy")
+  // def var_eq(a: Var, b: Var) = Predicate("=", List(a, b))
+  // val eq_assumption =
+  // //   Forall("xx", Forall("yy", Implies(var_eq(xx, yy), var_eq(yy, xx))))
 
-  // printTree(negationNormalForm(eq_assumption))(2)
-  val r5 = conjunctionPrenexSkolemizationNegation(eq_assumption)
-  r5.foreach { printClause(_) }
+  // {
+  //   val a = Var("a")
+  //   val b = Var("b")
 
+  //   val formula =
+  //     And(
+  //       List(
+  //         P(a),
+  //         P(b),
+  //         Or(
+  //           List(
+  //             Neg(P(a)),
+  //             Neg(P(b))
+  //           )
+  //         )
+  //       )
+  //     )
+  //   val assumptions = List(
+  //     List(P(a)),
+  //     List(P(b)),
+  //     List(
+  //       Neg(P(a)),
+  //       Neg(P(b))
+  //     )
+  //   ).map { (_, Assumed) }
+  //   val steps = List(
+  //     (List(Neg(P(a))), Deduced((1, 2), Map())),
+  //     (List(), Deduced((0, 3), Map()))
+  //   )
+
+  //   println(checkResolutionProof(assumptions ++ steps))
+
+  // }
+  // // printTree(negationNormalForm(eq_assumption))(2)
+  val r5 = conjunctionPrenexSkolemizationNegation(mansionMystery)
+  println("Clauses")
+  r5.zipWithIndex.foreach { case (c, i) => 
+    println(s"${i}") 
+    printClause(c)
+    println("======================") 
+  }
+
+  def equals(x: Term, y: Term): Formula = Predicate("=", List(x, y))
+  val step_16 = (
+    List(hates(a, a)),
+    Deduced((0, 5), Map(Var("x6") -> a))
+  )
+
+  val step_17 = (
+    List(
+      hates(b, a)
+    ),
+    Deduced(
+      (2, 16),
+      Map(Var("x9") -> a)
+    )
+  )
+
+  val step_18 = (
+    List(
+      Neg(hates(c, a))
+    ),
+    Deduced(
+      (7, 16),
+      Map(Var("x4") -> a)
+    )
+  )
+  
+  val step_19 = (
+    List(
+      Neg(killed(c, a))
+    ),
+    Deduced(
+      (9, 18),
+      Map(Var("x2") -> c, Var("x3") -> a)
+    )
+  )
+
+  val step_20 = (
+    List(
+      equals(b, b)
+    ),
+    Assumed
+  )
+  
+  val step_21 = (
+    List(
+      Neg(hates(a, b))
+    ),
+    Deduced(
+      (20, 6), 
+      Map(Var("x5") -> b)
+    )
+  )
+
+  val step_22_leibniz_hates = (
+    List(
+      Neg(equals(Var("x"), Var("y"))),
+      Neg(hates(Var("x"), a)),
+      hates(Var("y"), a)
+    ),
+    Assumed
+  )
+
+ 
+  val step_23 = (
+
+    List(
+      Neg(equals(b, c)),
+      Neg(hates(b, a))
+    ),
+    Deduced(
+      (22, 18),
+      Map(
+        Var("x") -> b,
+        Var("y") -> c
+      )
+
+    )
+
+  )
+
+  val step_24 = (
+    List(
+      Neg(equals(b, c))
+    ),
+    Deduced(
+      (23, 17),
+      Map()
+    )
+
+  )
+
+  val step_commutativity_25 = (
+    List(
+      Neg(equals(Var("x"), Var("y"))),
+      equals(Var("y"), Var("x"))
+    ), Assumed
+  )
+
+  val step_26 = (
+    List(
+      Neg(equals(c, b))
+    ),
+    Deduced(
+      (24, 25),
+      Map(Var("x") -> c, Var("y") -> b)
+    )
+  )
+  val step_27 = (
+    List(
+      hates(a, c)
+    ),
+    Deduced(
+      (5, 26),
+      Map(Var("x6") -> c)
+    )
+  )
+
+  val step_28 = (
+    List(
+      hates(b, c)
+    ),
+    Deduced(
+      (2, 27),
+      Map(Var("x9") -> c)
+    )
+  )
+
+  val step_29_only_hate_living = (
+    List(
+      Neg(hates(Var("x"), Var("y"))),
+      lives(Var("y"))
+    ),
+    Assumed
+  )
+
+
+  val step_30  = (
+    List(
+      hates(b, Function("x11", List(b))),
+      equals(Function("x11", List(b)), b)
+    ), 
+    Deduced(
+      (2, 5),
+      Map(
+        Var("x9") -> Function("x11", List(b)),
+        Var("x6") -> Function("x11", List(b))
+      )
+    )
+  )
+  val step_31 = (
+    List(
+      equals(Function("x11", List(b)), b)
+    ),
+    Deduced(
+      (1, 30),
+      Map(
+        Var("x10") -> b
+      )
+    )
+  )
+
+  val step_32_leibniz_hates = (
+    List(
+      Neg(equals(Var("x"), Var("y"))),
+      hates(b, Var("x")),
+      Neg(hates(b, Var("y")))
+    ),
+    Assumed
+  )
+
+  val step_33 = (
+    List(
+      Neg(equals(Function("x11", List(b)), b)),
+      Neg(hates(b, b))
+    ),
+    Deduced(
+      (32, 1),
+      Map(
+        Var("x10") -> b,
+        Var("x") -> Function("x11", List(b)),
+        Var("y") -> b
+      )
+    )
+  ) 
+  val step_34 = (
+    List(
+      Neg(hates(b, b))
+    ),
+    Deduced(
+      (33, 31),
+      Map()
+    )
+  )
+
+  
+
+  val step_35 = (
+    List(
+      richer(b, a)
+    ),
+    Deduced(
+      (3, 34),
+      Map(Var("x8") -> b)
+    )
+  )
+
+  val step_36 = (
+    List(
+      Neg(killed(b, a))
+    ),
+    Deduced(
+      (8, 35),
+      Map(Var("x2") -> b, Var("x3") -> a)
+    )
+  )
+
+  // val step_33 = (
+
+  // )
+  val assumptions = r5.map{ (_, Assumed) }
+
+
+  val steps = List[(Clause, Justification)](
+    step_16,
+    step_17,
+    step_18,
+    step_19,
+    step_20,
+    step_21,
+    step_22_leibniz_hates,
+    step_23,
+    step_24,
+    step_commutativity_25,
+    step_26,
+    step_27,
+    step_28,
+    step_29_only_hate_living,
+    step_30,
+    step_31,
+    step_32_leibniz_hates,
+    step_33,
+    step_34,
+    step_35,
+    step_36
+  )
+
+  println(checkResolutionProof(assumptions ++ steps))
 }
