@@ -1,5 +1,4 @@
-import java.text.Normalizer.Form
-import java.util.Base64.Decoder
+
 object Lab04 {
 
   // Term syntax
@@ -226,7 +225,6 @@ object Lab04 {
         case Neg(inner)              => Neg(transform(inner))
         case Predicate(_, _)         => g
         case _ =>
-          
           printTree(g)(2)
           throw new RuntimeException(
             "prenex transform comes after Skoleminzation!"
@@ -282,7 +280,7 @@ object Lab04 {
         case Predicate(_, _) | Neg(_) => g
         case And(List(a, b))          => And(List(pushInOrs(a), pushInOrs(b)))
         case Or(List(a, b))           => Or(List(pushInOrs(a), pushInOrs(b)))
-        case _                        =>
+        case _ =>
           printTree(g)(2)
           throw new RuntimeException("Something went wrong")
       }
@@ -301,8 +299,8 @@ object Lab04 {
           case (Predicate(tv, ts), Predicate(gv, gs)) =>
             (tv == gv) && (ts == gs)
           case (Neg(ti), Neg(gi)) => equalTrees(ti, gi)
-          case _ => false
-            
+          case _                  => false
+
         }
       }
 
@@ -333,26 +331,27 @@ object Lab04 {
         children.foldLeft(accum) { case (acc, x) =>
           x match {
             case And(ch) => collectAndChildren(ch, acc)
+            case Or(ch)  => acc :+ Or(collectOrChildren(ch))
             case _       => acc :+ x
           }
         }
       }
+
       tree match {
-        case o @ Or(children)         => Or(collectOrChildren(children))
+        // case o @ Or(children)         => Or(collectOrChildren(children))
         case a @ And(children)        => And(collectAndChildren(children))
         case Neg(_) | Predicate(_, _) => tree
 
       }
 
     }
-   
+
     val bin_tree = transformToBinOp(prenexSkolemizationNegation(f))
 
-   
     val cnf = fixedPoint(bin_tree)
 
     val unbin_cnf = transformUnbinaryOp(cnf)
-   
+
     def collectClauses(cnf: Formula): List[Clause] = {
 
       cnf match {
@@ -363,7 +362,8 @@ object Lab04 {
               case _          => List(List(x)) ++ acc
             }
           }
-        case Or(ls) => List(ls) // single clause
+        case Or(ls) =>
+          List(ls) // single clause
 
       }
 
@@ -393,7 +393,7 @@ object Lab04 {
     ): Boolean = {
 
       val (clause, justification) = step
-      
+
       justification match {
         case Assumed => true // don't check how it was derived.
         case Deduced((i, j), subst) if (i < index && j < index) =>
@@ -405,11 +405,11 @@ object Lab04 {
 
           val prod = left_premice
             .flatMap { x => right_premice.map { y => (x, y) } }
-          println(s"Checking ${step} at ${index}")
-          prod.foreach { p => println(s"${p._1}\t${p._2}") }
+          
+          
           val l = prod
             .filter { case (lit1, lit2) =>
-              println(s"Checking pairs ${lit1} and ${lit2}")
+              
               val c1 = lit1 == Neg(lit2)
               val c2 = lit2 == Neg(lit1)
               c1 || c2
@@ -426,9 +426,9 @@ object Lab04 {
     }
 
     proof.zipWithIndex.forall { case (step, ix) =>
-      println(s"Checking justification ${ix}")
-      checkJustification(step, ix)
       
+      checkJustification(step, ix)
+
     }
 
   }
@@ -522,60 +522,15 @@ object Lab04 {
 object Runner extends App {
   import Lab04._
 
-  // println("Clauses: ")
-  // val r4 = conjunctionPrenexSkolemizationNegation(exampleFromCourse)
-
-  // r4.foreach { printClause(_) }
-  // // val f =
-  // println("Hello")
-
-  // val xx = Var("xx")
-  // val yy = Var("yy")
-  // def var_eq(a: Var, b: Var) = Predicate("=", List(a, b))
-  // val eq_assumption =
-  // //   Forall("xx", Forall("yy", Implies(var_eq(xx, yy), var_eq(yy, xx))))
-
-  // {
-  //   val a = Var("a")
-  //   val b = Var("b")
-
-  //   val formula =
-  //     And(
-  //       List(
-  //         P(a),
-  //         P(b),
-  //         Or(
-  //           List(
-  //             Neg(P(a)),
-  //             Neg(P(b))
-  //           )
-  //         )
-  //       )
-  //     )
-  //   val assumptions = List(
-  //     List(P(a)),
-  //     List(P(b)),
-  //     List(
-  //       Neg(P(a)),
-  //       Neg(P(b))
-  //     )
-  //   ).map { (_, Assumed) }
-  //   val steps = List(
-  //     (List(Neg(P(a))), Deduced((1, 2), Map())),
-  //     (List(), Deduced((0, 3), Map()))
-  //   )
-
-  //   println(checkResolutionProof(assumptions ++ steps))
-
-  // }
-  // // printTree(negationNormalForm(eq_assumption))(2)
   val r5 = conjunctionPrenexSkolemizationNegation(mansionMystery)
-  println("Clauses")
-  r5.zipWithIndex.foreach { case (c, i) => 
-    println(s"${i}") 
-    printClause(c)
-    println("======================") 
-  }
+
+  // Use the following code segment to pring the clauses for the mystery...
+  // println("Clauses")
+  // r5.zipWithIndex.foreach { case (c, i) =>
+  //   println(s"${i}")
+  //   printClause(c)
+  //   println("======================")
+  // }
 
   def equals(x: Term, y: Term): Formula = Predicate("=", List(x, y))
   val step_16 = (
@@ -602,7 +557,7 @@ object Runner extends App {
       Map(Var("x4") -> a)
     )
   )
-  
+
   val step_19 = (
     List(
       Neg(killed(c, a))
@@ -613,23 +568,25 @@ object Runner extends App {
     )
   )
 
+  // Assumption
   val step_20 = (
     List(
       equals(b, b)
     ),
     Assumed
   )
-  
+
   val step_21 = (
     List(
       Neg(hates(a, b))
     ),
     Deduced(
-      (20, 6), 
+      (20, 6),
       Map(Var("x5") -> b)
     )
   )
 
+  // Assumption
   val step_22_leibniz_hates = (
     List(
       Neg(equals(Var("x"), Var("y"))),
@@ -639,9 +596,7 @@ object Runner extends App {
     Assumed
   )
 
- 
   val step_23 = (
-
     List(
       Neg(equals(b, c)),
       Neg(hates(b, a))
@@ -652,9 +607,7 @@ object Runner extends App {
         Var("x") -> b,
         Var("y") -> c
       )
-
     )
-
   )
 
   val step_24 = (
@@ -665,14 +618,15 @@ object Runner extends App {
       (23, 17),
       Map()
     )
-
   )
 
+  // Assumption
   val step_commutativity_25 = (
     List(
       Neg(equals(Var("x"), Var("y"))),
       equals(Var("y"), Var("x"))
-    ), Assumed
+    ),
+    Assumed
   )
 
   val step_26 = (
@@ -684,6 +638,7 @@ object Runner extends App {
       Map(Var("x") -> c, Var("y") -> b)
     )
   )
+
   val step_27 = (
     List(
       hates(a, c)
@@ -703,21 +658,13 @@ object Runner extends App {
       Map(Var("x9") -> c)
     )
   )
+  
 
-  val step_29_only_hate_living = (
-    List(
-      Neg(hates(Var("x"), Var("y"))),
-      lives(Var("y"))
-    ),
-    Assumed
-  )
-
-
-  val step_30  = (
+  val step_30 = (
     List(
       hates(b, Function("x11", List(b))),
       equals(Function("x11", List(b)), b)
-    ), 
+    ),
     Deduced(
       (2, 5),
       Map(
@@ -731,13 +678,14 @@ object Runner extends App {
       equals(Function("x11", List(b)), b)
     ),
     Deduced(
-      (1, 30),
+      (1, 29),
       Map(
         Var("x10") -> b
       )
     )
   )
 
+  // Assumption
   val step_32_leibniz_hates = (
     List(
       Neg(equals(Var("x"), Var("y"))),
@@ -753,32 +701,30 @@ object Runner extends App {
       Neg(hates(b, b))
     ),
     Deduced(
-      (32, 1),
+      (31, 1),
       Map(
         Var("x10") -> b,
         Var("x") -> Function("x11", List(b)),
         Var("y") -> b
       )
     )
-  ) 
+  )
   val step_34 = (
     List(
       Neg(hates(b, b))
     ),
     Deduced(
-      (33, 31),
+      (32, 30),
       Map()
     )
   )
-
-  
 
   val step_35 = (
     List(
       richer(b, a)
     ),
     Deduced(
-      (3, 34),
+      (3, 33),
       Map(Var("x8") -> b)
     )
   )
@@ -788,17 +734,131 @@ object Runner extends App {
       Neg(killed(b, a))
     ),
     Deduced(
-      (8, 35),
+      (8, 34),
       Map(Var("x2") -> b, Var("x3") -> a)
     )
   )
 
-  // val step_33 = (
+  // Assumption
+  val step_37_skolem_killer_leibneiz = (
+    List(
+      Neg(equals(Var("x"), Var("y"))),
+      Neg(killed(Var("x"), a)),
+      killed(Var("y"), a)
+    ),
+    Assumed
+  )
 
-  // )
-  val assumptions = r5.map{ (_, Assumed) }
+  val step_38 = (
+    List(
+      Neg(equals(Function("x0", List()), b)),
+      Neg(killed(Function("x0", List()), a))
+    ),
+    Deduced(
+      (35, 36),
+      Map(
+        Var("x") -> Function("x0", List()),
+        Var("y") -> b
+      )
+    )
+  )
+
+  val step_39 = (
+    List(
+      Neg(equals(Function("x0", List()), b))
+    ),
+    Deduced(
+      (37, 14),
+      Map()
+    )
+  )
+
+  val step_40 = (
+    List(
+      Neg(equals(Function("x0", List()), c)),
+      Neg(killed(Function("x0", List()), a))
+    ),
+    Deduced(
+      (19, 36),
+      Map(
+        Var("x") -> Function("x0", List()),
+        Var("y") -> c
+      )
+    )
+  )
+
+  val step_41 = (
+    List(
+      Neg(equals(Function("x0", List()), c))
+    ),
+    Deduced(
+      (39, 14),
+      Map()
+    )
+  )
+
+  val step_42 = (
+    List(
+      equals(Function("x0", List()), a),
+      equals(Function("x0", List()), b),
+      equals(Function("x0", List()), c)
+    ),
+    Deduced(
+      (10, 15),
+      Map(
+        Var("x1") -> Function("x0", List())
+      )
+    )
+  )
+
+  val step_43 = (
+    List(
+      equals(Function("x0", List()), a),
+      equals(Function("x0", List()), b)
+    ),
+    Deduced(
+      (41, 40),
+      Map(
+      )
+    )
+  )
+  val step_44 = (
+    List(
+      equals(Function("x0", List()), a)
+    ),
+    Deduced(
+      (42, 38),
+      Map(
+      )
+    )
+  )
 
 
+  val step_45 = (
+    List(
+      Neg(killed(Function("x0", List()), a)),
+      killed(a, a)
+    ),
+    Deduced(
+      (36, 43),
+      Map(
+        Var("x") -> Function("x0", List()),
+        Var("y") -> a
+      )
+    )
+  )
+
+  val step_46 = (
+    List(killed(a, a)),
+    Deduced(
+      (44, 14),
+      Map()
+    )
+  )
+
+
+  val assumptions = r5.map { (_, Assumed) }
+  
   val steps = List[(Clause, Justification)](
     step_16,
     step_17,
@@ -813,15 +873,25 @@ object Runner extends App {
     step_26,
     step_27,
     step_28,
-    step_29_only_hate_living,
+
     step_30,
     step_31,
     step_32_leibniz_hates,
     step_33,
     step_34,
     step_35,
-    step_36
+    step_36,
+    step_37_skolem_killer_leibneiz,
+    step_38,
+    step_39,
+    step_40,
+    step_41,
+    step_42,
+    step_43,
+    step_44,
+    step_45,
+    step_46
   )
 
-  println(checkResolutionProof(assumptions ++ steps))
+  println("Found the proof: " + checkResolutionProof(assumptions ++ steps))
 }
