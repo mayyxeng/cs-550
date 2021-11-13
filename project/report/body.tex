@@ -16,11 +16,11 @@
 
 % \subsection{Reducing security to safety}
 
-At the interface of any security-sensitive function call, there usually exists a
-\emph{contract} that describes which inputs or outpus are deemed public (i.e.,
-known to attackers) and which ones are private (i.e., to protect). A leak should
-never reveal anyting about the private inputs and outputs (but publics ones 
-can be leaked).
+% At the interface of any security-sensitive function call, there usually exists a
+% \emph{contract} that describes which inputs or outpus are deemed public (i.e.,
+% known to attackers) and which ones are private (i.e., to protect). A leak should
+% never reveal anyting about the private inputs and outputs (but publics ones 
+% can be leaked).
 % If we denote a program as $p$ (with the usual definition of a prgram being a
 % sequence of statements or programs) with a corresponding state $s$ (which
 % is mapping from variables to values) then at each step of execution, from
@@ -41,40 +41,47 @@ can be leaked).
 % $e$. We can also extend the leakage sources to comprise machine operations that
 % have operand-dependent execution latency (i.e., division in x86).
 
-Using the leakage rules in \secref{prelimnaries}, 
-we can reduce constant-time security to execution safety (i.e., termination
-without any failed assertions) by building a \emph{self-product} in which two
-abstract execution take place back to back, only differing in the value of
-private inputs and outputs. \figref{rules} shows how a program product can
-be constructed where $\hat{p}$ is the program $p$ with all variables renamed
-(i.e., an alternative execution).
+We now illustrate (using an example) how the authors use the leakage rules in \secref{prelimnaries} 
+to reduce constant-time security to assertion safety.
+
+We use the program listed in \figref{example} as our running example. 
+This program copies a sub-array of length \texttt{sub\_len}, starting at index \texttt{l\_idx}, from array \texttt{in}
+to array \texttt{out}.
+We assume that the starting addresses and lengths of both arrays are publicly observable but the value of \texttt{l\_idx} and the array contents must be kept a secret.
+Note, this program is \emph{not constant-time secure} since the branches on line 5 clearly leak information about \texttt{l\_idx}.
+
+\begin{figure}[h]
+    \lstinputlisting[language=C]{example.c}
+    \caption{Running example - sub-array copy}
+    \label{fig:example}
+\end{figure}
+
+
+The authors reduce the constant-time security of the original program ($P$) to the assertion safety of a second program ($Q$) that is the \emph{self-product} of $P$.
+Said differently, $Q$ is a program in which two abstract executions of $P$ take place simultaneously, with the two executions only differing in the value of \emph{secret} inputs and outputs. 
+\figref{rules}~.a shows how such a self-product can be constructed ($\hat{p}$ is the program $p$ with all variables renamed).
+First, each public input is assumed equal in both executions, then a guard and instrumentation are recursively applied to each subprogram. 
+The guards assert the equality of leakage functions for each subprogram $p$ and its variable-renaming $\hat{p}$.
+The essence of the transformation lies in the instrumentation (~\figref{rules}~.b) which reduces constant-time security to assertion safety. 
+The authors formalize this reduction from constant-time security to safety in Coq and prove that it is sound for all safe input programs (i.e., a security verdict is always correct) and complete for programs where information about public outputs is not taken into consideration in the security analysis (i.e., an insecurity verdict is always correct).
 
 \begin{figure}[h]
     \centering
     \subfigure[Program product construction rules]{
         \includegraphics[width=0.45\textwidth]{./figs/fig_7.pdf}
     }\label{fig:fig_7}
-    \subfigure[Instrumentation rules] {
+    \subfigure[Instrumentation rules.] {
         \includegraphics[width=0.45\textwidth]{./figs/fig_8.pdf}
     }\label{fig:fig_8}
     \caption{Program product}
     \label{fig:rules}
 \end{figure}
 
-\begin{figure}[t]
-    \lstinputlisting[language=C]{example.c}
-    \caption{Running example - sub-array copy}
-    \label{fig:example}
-  \end{figure}
-
-The essence of the transformation is the instrumentation, which reduces 
-constant-time security to assertion safety. \figref{example_prod} shows 
-the product of the sub-array copy program in \figref{example}. Notice how
-the program is instrumented with assertions to ensure leakage remains the same at
-every step of execution. In this example, the private inputs \texttt{l\_idx} and
-its renaming are not assumed to be equal, therefore the assetion on line 8 fails
-and the program is proved to be unsafe and hence it follows that the program is
-not constant-time secure.
+\figref{example_prod} illustrates the self-product for our running example. 
+The resultant program is instrumented with assertions to ensure leakage remains the same at
+every step of execution.
+Since \texttt{l\_idx} is a private input to the program, its renaming cannot be assumed equal.
+Consequently, the assertion on line $8$ fails, demonstrating that assertions in the self-product do not hold if the given program does not run in constant-time.
 
 \begin{figure}[h]
     \lstinputlisting[language=MySketch]{prod.c}
