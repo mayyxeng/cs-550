@@ -1,8 +1,16 @@
-\section{Conclusion}
+\section{Takeaways}
 
-% Recall  briefly what the paper achieves, and how it is new. Express your critical skil on the paper and explain what you think are the strong and weak points of the paper. Also tell how you could potentially use the paper's results in your future project. You can also suggest further work or extensions to the paper.
+This work formalizes the previously imprecise notion of constant-time programming, in addition to providing a publicly available and fully automated tool can verify (in seconds) whether implementations of cryptographic algorithms from off-the-shelf libraries adhere to the notion of constant-time. 
+This is, undoubtedly, an impressive result.
 
+That said, the paper does have a few weaknesses:
 \begin{itemize}
-  \item Pros: Can correctly categorize a much larger set of security programs as being constant-time.
-  \item Cons: Have to annotate benign branches.
+	\item \texttt{ct-verif} requires LLVM implementations; this is problematic for two reasons.
+	First, cryptographic code is often written directly in assembly due to the performance benefits. For instance, Vale~\cite{vale} demonstrates that OpenSSL assembly implementations outperform their C counterparts by up to 50\%.
+	Second, verifying that LLVM code runs in constant-time does not guarantee that the executable runs in constant time~\cite{KaufmannPVV16}. To the authors' credit, they do discuss such scenarios.
+	\item The formalization of constant-time as presented by the papers is significantly weakened by the advent of micro-architectural attacks (~\cite{meltdown,spectre}). To be fair to the authors, such attacks became popular after their paper was published. Further, one could argue that such attacks are not a property of the implementation per-se, and are a menace that the underlying hardware/operating system must tackle.
+	\item Finally, the authors do not present a single example where their ``automated'' approach fails to verify constant-timedness in reasonable time. As such, the results look a little too good to be true. 
 \end{itemize}
+
+During the course of this project, we plan to investigate the first and third aspects of \texttt{ct-verif} more thoroughly. 
+Specifically we aim to identify where the tool falls short and also patch it with LLVM-passes that can preserve constant-timedness. 
