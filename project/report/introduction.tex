@@ -5,7 +5,7 @@ Timing attacks are a family of side-channel attacks that extract information fro
 Constant-time (CT) programming techniques are used to harden programs against timing attacks.
 CT programming involves rewriting a program such that (1)~its control flow does not depend on program secrets, (2)~its memory accesses do not depend on program secrets, and (3)~its variable-latency instructions do not depend on program secrets.
 CT programming in its purest form therefore involves a performance penalty.
-Furthermore, it prevents the use of common programming idioms like early exits as such techniques technically violate the CT policy.
+Furthermore, it prevents the use of common programming idioms like early exits as such techniques technically violate the CT property.
 
 CT programming is the most effective software-based countermeasure against timing attacks~\cite{bernstein_cache_timing_attacks, dsa_exponentiations}.
 Writing CT programs, however, is quite difficult as it involves the use of low-level programming languages and programming practices that deviate from good software engineering principles.
@@ -14,13 +14,9 @@ CT code is therefore hard to read/reason about and even expert-written programs-
 Extensive testing and code review cycles are insufficient to identify all CT implementation bugs as even production-grade software like Amazon's s2n library has managed to let multiple timing attacks go to a release.
 
 Almeida et al. therefore propose using formal methods to assert the CT property of an input program.
-
 This work's contributions include:
 \begin{enumerate}[label=(\roman*)]
   \item a formal foundation to model constant-time programming properties,
   \item a sound and complete reduction from input programs to a safety assertion check,
   \item an automated tool, \texttt{ct-verif}, that implements their reduction on LLVM code.
 \end{enumerate}
-
-The most impressive contribution of this work is the ability to model benign branches, i.e.
-Benign brances are control flow instructions which
