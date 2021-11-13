@@ -3,15 +3,22 @@
 
 Timing attacks are a family of side-channel attacks that extract information from software systems by measuring how long a program takes to execute under adversary-controlled inputs.
 Constant-time (CT) programming techniques are used to harden programs against timing attacks.
-CT involves rewriting a program such that its (1)~control flow, (2)~memory accesses, and (3)~variable-latency instructions, do not depend on program secrets.
+CT programming involves rewriting a program such that (1)~its control flow does not depend on program secrets, (2)~its memory accesses do not depend on program secrets, and (3)~its variable-latency instructions do not depend on program secrets.
 
-CT programming is hard and even expert-written programs thought to be CT have been shown to suffer from timing attacks.
+CT programming is the most effective software-based countermeasure against timing attacks.
+However, writing CT programs is very difficult as it involves the use of low-level programming languages and programming practices that deviate from good software engineering principles.
+CT code is therefore hard to read/reason about, and even expert-written ``CT'' programs have been shown to suffer from timing attacks.
 
-\begin{itemize}
-  \item Timing attacks have been used to extract information from software systems deemed secure and are a
-  \item Constant-time programming attempts to alleviate such attacks, but CT programming is hard and programs that one thinks are CT often are not.
-  \item This paper presents the techniques used in a tool, ct-verif, that can formally assert if an input program is CT or not.
-  \item Constant-time programs in their purest form often suffer from a performance penalty. Relaxing the definition of constant-time is possible to improve program performance as long as it does not compromise security.
-  \item The novelty of this paper is its ability to determine if this category of relaxed constant-time programs are indeed constant-time.
-  \item Takes as input LLVM IR and returns a simple yes/no result saying whether it is constant-time or not.
-\end{itemize}
+Validating CT implementations is therefore a primary concern.
+Extensive testing and code review cycles are insufficient to identify all CT implementation bugs as even production-grade software like Amazon's s2n library has managed to let multiple CT implemenation bugs go to a release.
+
+Almeida et al. propose to use formal methods to assert the CT property of an input program.
+This work's contributions include:
+\begin{enumerate}[label=(\roman*)]
+  \item a formal foundation to model constant-time programming properties,
+  \item a sound and complete reduction from input programs to a safety assertion,
+  \item an automated tool, \texttt{ct-verif}, that implements their reduction on LLVM code.
+\end{enumerate}
+
+Furthermore, CT programming in its purest form often suffers from a performance penalty.
+test
