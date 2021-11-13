@@ -1,0 +1,11 @@
+\section{Introduction}
+% Say a few general words about the general context of the paper you chose. Explain why the topic is of interest, or where it can be applied. If it is about a piece of software or artifact, give a description of it. State the main result of the paper and why it is new or how it improves on previous state of knowledge. You can cite references using, for example \cite{BibliographyManagementLaTeX} and make a succint presentation of the organisation of your report.
+
+\begin{itemize}
+  \item Side-channel attacks are predominant today.
+  \item Constant-time programming attempts to alleviate such attacks, but CT programming is hard and programs that one thinks are CT often are not.
+  \item This paper presents the techniques used in a tool, ct-verif, that can formally assert if an input program is CT or not.
+  \item Constant-time programs in their purest form often suffer from a performance penalty. Relaxing the definition of constant-time is possible to improve program performance as long as it does not compromise security.
+  \item The novelty of this paper is its ability to determine if this category of relaxed constant-time programs are indeed constant-time.
+  \item Takes as input LLVM IR and returns a simple yes/no result saying whether it is constant-time or not.
+\end{itemize}

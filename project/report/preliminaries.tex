@@ -1,0 +1,16 @@
+\section{Preliminaries}
+
+% State the technical details that are necessary to understand the paper. It is generally a collection of definitions, concepts and notations with potentially a few preliminary results. It can be, for example the mathematical framework in which the topic of your paper is expressed. In particular, fix the notation you will be using for your review.
+
+\begin{itemize}
+  \item Simple example that can easily be checked + example of benign branch that other tools cannot determine to be constant-time.
+  \item Formalism used to model a program (while-language framework and what it supports).
+  \item The paper proposes modeling contant-time verification of a program by encoding the input program as a safety condition and executing the program to check if it is safe.
+  \item Define what leakage $L(c)$ is formally. A leakage model can either depend on
+        \item \begin{enumerate}
+          \item Path-based characterizaion of constant-time: leakage of branch conditions.
+          \item Cache-based characterization of constant-time: leakage of memory access indices.
+          \item Instruction-based characterization of constant-time: leakage of instruction operand sizes.
+        \end{enumerate}
+  \item Define what it means for a program to be safe (i.e., it does not violate an assertion inserted when the safety program).
+\end{itemize}
