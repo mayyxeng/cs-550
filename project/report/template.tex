@@ -6,6 +6,7 @@
 \usepackage{enumitem}
 \usepackage{listings}
 \usepackage{xcolor}
+\usepackage{graphicx}
 
 \lstdefinelanguage{MySketch}%
 { mathescape,
@@ -49,6 +50,13 @@
 \newcommand{\figref}[1]{Fig.~\ref{fig:#1}}
 \newcommand{\algref}[1]{Alg.~\ref{alg:#1}}
 \newcommand{\tabref}[1]{Table~\ref{tab:#1}}
+
+\makeatletter
+\newcommand\module{\@startsection{paragraph}{4}{\z@}%
+                                    {1.25ex \@plus1ex \@minus.2ex}%
+                                    {-1em}%
+                                    {\normalfont\normalsize\slshape\bfseries}}
+\makeatother
 
 \title{Review: Verifying Constant-Time Implementations}
 %\subtitle{Formal Verification Background Paper Report}
