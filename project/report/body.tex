@@ -21,32 +21,33 @@ At the interface of any security-sensitive function call, there usually exists a
 known to attackers) and which ones are private (i.e., to protect). A leak should
 never reveal anyting about the private inputs and outputs (but publics ones 
 can be leaked).
-If we denote a program as $p$ (with the usual definition of a prgram being a
-sequence of statements or programs) with a corresponding state $s$ (which
-is mapping from variables to values) then at each step of execution, from
-state $s$ executing program/statement $p$ we can define leakage $L(.)$ as follows:
+% If we denote a program as $p$ (with the usual definition of a prgram being a
+% sequence of statements or programs) with a corresponding state $s$ (which
+% is mapping from variables to values) then at each step of execution, from
+% state $s$ executing program/statement $p$ we can define leakage $L(.)$ as follows:
 
-\begin{equation}
-    \begin{split}
-    L(\langle s, \text{\texttt{if}}~e~\text{\texttt{then}}~p_1~\text{\texttt{else}}~p_2 \rangle) = & s(e) \\
-    L(\langle s, \text{\texttt{while}}~e~\text{\texttt{do}}~p \rangle) = & s(e) \\
-    L(\langle s, x_0[e_0] = e \rangle) = & s(e_0)s(e_1)...s(e_n)
-    \end{split}
-\end{equation}
+% \begin{equation}
+%     \begin{split}
+%     L(\langle s, \text{\texttt{if}}~e~\text{\texttt{then}}~p_1~\text{\texttt{else}}~p_2 \rangle) = & s(e) \\
+%     L(\langle s, \text{\texttt{while}}~e~\text{\texttt{do}}~p \rangle) = & s(e) \\
+%     L(\langle s, x_0[e_0] = e \rangle) = & s(e_0)s(e_1)...s(e_n)
+%     \end{split}
+% \end{equation}
 
-The first two leakage sources correspond to leakage from control flow while the
-latter is leakage from memory access. Note that in the third leakage source,
-a memory leak $s(e_0)$ corresponds to leakage from the right-hand-side indexer
-expression and $s(e_1)$ to $s(e_n)$ possible indexer expression in expression
-$e$. We can also extend the leakage sources to comprise machine operations that
-have operand-dependent execution latency (i.e., division in x86).
+% The first two leakage sources correspond to leakage from control flow while the
+% latter is leakage from memory access. Note that in the third leakage source,
+% a memory leak $s(e_0)$ corresponds to leakage from the right-hand-side indexer
+% expression and $s(e_1)$ to $s(e_n)$ possible indexer expression in expression
+% $e$. We can also extend the leakage sources to comprise machine operations that
+% have operand-dependent execution latency (i.e., division in x86).
 
-Using the leakage rules above, we can reduce proving constant-time security to
-execution safety (i.e., termination without any failed assertions) by building a
-\emph{self-product} in which two abstract execution take place back to back,
-only differing in the value of private inputs and outputs.
-Figure~\ref{fig:rules} shows how a program product can be constructed where 
-$\hat{p}$ is the program $p$ with all variables renamed.
+Using the leakage rules in \secref{prelimnaries}, 
+we can reduce constant-time security to execution safety (i.e., termination
+without any failed assertions) by building a \emph{self-product} in which two
+abstract execution take place back to back, only differing in the value of
+private inputs and outputs. \figref{rules} shows how a program product can
+be constructed where $\hat{p}$ is the program $p$ with all variables renamed
+(i.e., an alternative execution).
 
 \begin{figure}[h]
     \centering
@@ -60,34 +61,24 @@ $\hat{p}$ is the program $p$ with all variables renamed.
     \label{fig:rules}
 \end{figure}
 
+\begin{figure}[t]
+    \lstinputlisting[language=C]{example.c}
+    \caption{Running example - sub-array copy}
+    \label{fig:example}
+  \end{figure}
 
 The essence of the transformation is the instrumentation, which reduces 
-constant-time security to assertion safety. \figref{fig:example_prod} shows 
-the product of the sub-array copy program. Notice how  the program is instrumented
-with assertion to ensure leakage remains the same at every step of execution.
-In this example, the private inputs \texttt{l\_idx} and its renaming are not
-assumed to be equal, therefore the assetion on line 8 fails and the program 
-is proved to be unsafe and hence it follows that the program is not constant-time
-secure.
+constant-time security to assertion safety. \figref{example_prod} shows 
+the product of the sub-array copy program in \figref{example}. Notice how
+the program is instrumented with assertions to ensure leakage remains the same at
+every step of execution. In this example, the private inputs \texttt{l\_idx} and
+its renaming are not assumed to be equal, therefore the assetion on line 8 fails
+and the program is proved to be unsafe and hence it follows that the program is
+not constant-time secure.
 
 \begin{figure}[h]
-    \begin{lstlisting}[language=MySketch]
-        assume in = $\hat{\texttt{in}}$;
-        assume out = $\hat{\texttt{out}}$;
-        assume len = $\hat{\texttt{len}}$;
-        assume sub_len = $\hat{\texttt{sub\_len}}$;
-        i = 0; $\hat{\texttt{i}}$ = 0; j = 0; $\hat{\texttt{j}}$ = 0;
-        assert (i < len) = ($\hat{\texttt{i}}$ < $\hat{\texttt{len}}$); // trivial
-        while (i < len) do:
-          assert ((i $\geq$ l_idx) && (i < l_idx + sub_len)) = (($\hat{\texttt{i}}$ $\geq$ _l_idx) && ($\hat{\texttt{i}}$ < _l_idx + $\hat{\texttt{sub\_len}}$) // fails;
-          if ((i $\geq$ l_idx) && (i < l_idx + sub_len)) then
-              /// the rest of the program does not matter
-              assert i = $\hat{\texttt{i}}$ && j = $\hat{\texttt{j}}$
-              out[j] = in[i]; $\hat{\texttt{out}}$[$\hat{\texttt{j}}$] = $\hat{\texttt{in}}$[_i];
-              j = j + 1; $\hat{\texttt{j}}$ = $\hat{\texttt{j}}$ + 1;
-          i = i + 1; $\hat{\texttt{i}}$ = $\hat{\texttt{i}}$ + 1;
-      \end{lstlisting}
-      \caption{example program product of the sub-array copy program.}
-      \label{fig:example_prod}
+    \lstinputlisting[language=MySketch]{prod.my}
+    \caption{example program product of the sub-array copy program.}
+    \label{fig:example_prod}
 \end{figure}
 
