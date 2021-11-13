@@ -7,28 +7,59 @@
 \title{Review: Verifying Constant-Time Implementations}
 %\subtitle{Formal Verification Background Paper Report}
 \author{Mahyar Emami, Rishabh Iyer, Sahand Kashani \\ firstname.lastname@epfl.ch}
-           
+
 \begin{document}
 \maketitle
 
 \section{Introduction}
-Say a few general words about the general context of the paper you chose. Explain why the topic is of interest, or where it can be applied. If it is about a piece of software or artifact, give a description of it. State the main result of the paper and why it is new or how it improves on previous state of knowledge. You can cite references using, for example \cite{BibliographyManagementLaTeX} and make a succint presentation of the organisation of your report.
+% Say a few general words about the general context of the paper you chose. Explain why the topic is of interest, or where it can be applied. If it is about a piece of software or artifact, give a description of it. State the main result of the paper and why it is new or how it improves on previous state of knowledge. You can cite references using, for example \cite{BibliographyManagementLaTeX} and make a succint presentation of the organisation of your report.
+
+\begin{itemize}
+  \item Side-channel attacks are predominant today.
+  \item Constant-time programming attempts to alleviate such attacks, but CT programming is hard and programs that one thinks are CT often are not.
+  \item This paper presents the techniques used in a tool, ct-verif, that can formally assert if an input program is CT or not.
+  \item Constant-time programs in their purest form often suffer from a performance penalty. Relaxing the definition of constant-time is possible to improve program performance as long as it does not compromise security.
+  \item The novelty of this paper is its ability to determine if this category of relaxed constant-time programs are indeed constant-time.
+  \item Takes as input LLVM IR and returns a simple yes/no result saying whether it is constant-time or not.
+\end{itemize}
 
 \section{Preliminaries}
-State the technical details that are necessary to understand the paper. It is generally a collection of definitions, concepts and notations with potentially a few preliminary results. It can be, for example the mathematical framework in which the topic of your paper is expressed. In particular, fix the notation you will be using for your review.
+% State the technical details that are necessary to understand the paper. It is generally a collection of definitions, concepts and notations with potentially a few preliminary results. It can be, for example the mathematical framework in which the topic of your paper is expressed. In particular, fix the notation you will be using for your review.
+
+\begin{itemize}
+  \item Simple example that can easily be checked + example of benign branch that other tools cannot determine to be constant-time.
+  \item Formalism used to model a program (while-language framework and what it supports).
+  \item The paper proposes modeling contant-time verification of a program by encoding the input program as a safety condition and executing the program to check if it is safe.
+  \item Define what leakage $L(c)$ is formally. A leakage model can either depend on
+        \item \begin{enumerate}
+          \item Path-based characterizaion of constant-time: leakage of branch conditions.
+          \item Cache-based characterization of constant-time: leakage of memory access indices.
+          \item Instruction-based characterization of constant-time: leakage of instruction operand sizes.
+        \end{enumerate}
+  \item Define what it means for a program to be safe (i.e., it does not violate an assertion inserted when the safety program).
+\end{itemize}
 
 \section{Body}
-Explain the paper, in your own words. Don't go into as many details as the original text, but the person reading your review should have a general understanding of the paper's results and how those results can be obtained. The structure and content of this section of course heavily depends on the paper itself. Don't hesitate to split it in multiple sections or subsections, for example:
-\subsection{An algorithm for whatever problem we try to solve}
-If your paper contains theorems, sketch the proofs of important theorems. 
+% Explain the paper, in your own words. Don't go into as many details as the original text, but the person reading your review should have a general understanding of the paper's results and how those results can be obtained. The structure and content of this section of course heavily depends on the paper itself. Don't hesitate to split it in multiple sections or subsections, for example:
+% \subsection{An algorithm for whatever problem we try to solve}
+% If your paper contains theorems, sketch the proofs of important theorems.
 
-\subsection{Benchmarks}
-If it contains benchmarks, show the key scores or results.
+% \subsection{Benchmarks}
+% If it contains benchmarks, show the key scores or results.
 
-You can follow the structure of the paper you're reviewing, but write with your own words.
+% You can follow the structure of the paper you're reviewing, but write with your own words.
+
+\begin{itemize}
+  \item How is the reduction to a safety check performed?
+\end{itemize}
 
 \section{Conclusion}
 Recall  briefly what the paper achieves, and how it is new. Express your critical skil on the paper and explain what you think are the strong and weak points of the paper. Also tell how you could potentially use the paper's results in your future project. You can also suggest further work or extensions to the paper.
+
+\begin{itemize}
+  \item Pros: Can correctly categorize a much larger set of security programs as being constant-time.
+  \item Cons: Have to annotate benign branches.
+\end{itemize}
 
 \bibliographystyle{plain}
 
