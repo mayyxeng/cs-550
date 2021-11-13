@@ -51,7 +51,7 @@ We assume that the starting addresses and lengths of both arrays are publicly ob
 Note, this program is \emph{not constant-time secure} since the branches on line 5 clearly leak information about \texttt{l\_idx}.
 
 \begin{figure}[h]
-    \lstinputlisting[language=C]{example.c}
+    \centering\resizebox{0.7\columnwidth}{!}{\lstinputlisting[language=C]{example.c}}
     \caption{Running example - sub-array copy}
     \label{fig:example}
 \end{figure}
@@ -84,8 +84,8 @@ Since \texttt{l\_idx} is a private input to the program, its renaming cannot be 
 Consequently, the assertion on line $8$ fails, demonstrating that assertions in the self-product do not hold if the given program does not run in constant-time.
 
 \begin{figure}[h]
-    \lstinputlisting[language=MySketch]{prod.c}
-    \caption{example program product of the sub-array copy program.}
+    \centering\resizebox{1.2\columnwidth}{!}{\lstinputlisting[language=MySketch]{prod.c}}
+    \caption{Example program product of the sub-array copy program.}
     \label{fig:example_prod}
 \end{figure}
 
