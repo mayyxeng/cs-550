@@ -3,6 +3,15 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
+\usepackage{listings}
+
+\lstdefinelanguage{MySketch}%
+{ mathescape,
+  numbers=left,
+  keywords={assume, assert, Array, Int, func, while,
+  do, if, then, else, input, output, public, private, product, together, is,
+  guard, instrument}
+}
 
 \title{Review: Verifying Constant-Time Implementations}
 %\subtitle{Formal Verification Background Paper Report}
@@ -22,7 +31,5 @@
 \bibliographystyle{plain}
 
 \bibliography{biblio.bib}
-
-
 
 \end{document}
