@@ -3,7 +3,7 @@
 
 % State the technical details that are necessary to understand the paper. It is generally a collection of definitions, concepts and notations with potentially a few preliminary results. It can be, for example the mathematical framework in which the topic of your paper is expressed. In particular, fix the notation you will be using for your review.
 
-Here we summarize the authors' formalization of constant-timedness for a simple, high-level, structured programming language. 
+Here we summarize the authors' formalization of constant-timeliness for a simple, high-level, structured programming language. 
 \figref{syntax} lists the language's syntax. 
 The operational semantics for the language's primitives are standard and are listed in \figref{semantics} for reference.
 
@@ -35,7 +35,7 @@ when $c_n$ and $c'_n$ are \textit{X-equivalent}.
 \module{Modeling Leakages:}
 A \emph{leakage model} $L$ maps program configurations $c$ to \emph{observations} $L(c)$, and extends to executions, mapping $c_{1},c_{2},...c_{n}$ to the \emph{observation} $L(c_{1},c_{2},...c_{n}) = L(c_{1})\cdot L(c_{2})\cdot\cdot\cdot L(c_{n})$. Two executions $\alpha$ and $\beta$ are \emph{indistinguishable} when $L(\alpha) = L(\beta)$.
 
-\module{Definition of Constant-Time Security:} \emph{A program p with a set $X_{i}$ of inputs declared publicly observable and a set $X_{o}$ of  outputs declared publicly observable is constant-time secure when all of its initially $X_{i}$-equivalent and finally $X_{o}$-equivalent executions are executable.}
+\module{Definition of Constant-Time Security:} \emph{A program p with a set $X_{i}$ of inputs declared publicly observable and a set $X_{o}$ of outputs declared publicly observable is constant-time secure when all of its initially $X_{i}$-equivalent and finally $X_{o}$-equivalent executions are executable.}
 
 \module{Sources of leakage considered:} The authors consider three leakage models in this work---{(1)}~branch-based leakage,
 {(2)}~memory access-based leakage, and
@@ -45,7 +45,7 @@ Branch-based leakages expose the valuations of branch conditions. For instance, 
 {(1)}~$\langle$ s, if e then $p_{1}$ else $p_{2}\rangle \mapsto s(e)$,
 {(2)~$\langle$ s, while e do p$\rangle \mapsto s(e)$
 
-Memory access-based leakages expose the addresses acccessed in load and store instructions. In the simple language of while programs this is equivalent to exposing the indexes to program variables read and written at each statement. 
+Memory access-based leakages expose the addresses accessed in load and store instructions. In the simple language of while programs, this is equivalent to exposing the indexes to program variables read from and written to at each statement. 
 
 Finally, the time required to execute an instruction may vary based on the provided operands on modern processors. For instance, integer division on x86 processors depends on the size of the two operands~\cite{intel-manual}). To account for such leakages, the authors add leakage models for all such instructions. Here, we only show the model for division - $\langle$ s, x = $e_{1}/e_{2}\rangle \mapsto sizeof(e_{1},e_{2})$
 

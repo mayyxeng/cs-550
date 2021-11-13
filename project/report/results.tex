@@ -2,7 +2,7 @@
 \label{sec:eval}
 
 The authors implement the algorithm outlined in \secref{body} in a publicly available tool called \texttt{ct-verif}~\cite{ct-verif-github}. 
-\texttt{ct-verif} takes as input the LLVM implementation of a cryptographic algorithm and outputs either a proof of constant-timedness or a counter-example showing how the property is violated. 
+\texttt{ct-verif} takes as input the LLVM implementation of a cryptographic algorithm and outputs either proof of constant-timeliness or a counter-example showing how the property is violated. 
 Under the covers, \texttt{ct-verif} leverages the SMACK verification tool~\cite{smack} to translate the LLVM to Boogie~\cite{boogie} code. 
 It then performs its reduction on the Boogie code and applies the Boogie verifier to the resulting program. 
 

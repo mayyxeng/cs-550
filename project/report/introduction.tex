@@ -7,8 +7,8 @@ This is because popular cryptographic libraries (e.g., OpenSSL~\cite{openssl}) r
 Constant-Time programming is the most effective software countermeasure against such attacks.
 Constant-time programming involves rewriting a program such that (1)~its control flow does not depend on program secrets, (2)~it does not perform any secret-dependent memory accesses, and (3)~it does not use variable-latency instructions to operate on secrets.
 
-However, writing and reasoning about constant-time programs is hard since it typically involves the use of low-level programming languages and programming practices that deviate from good software engineering principles.
+However, writing and reasoning about constant-time programs are hard since it typically involves the use of low-level programming languages and programming practices that deviate from good software engineering principles.
 For example, two constant-time violations\footnote{See pull requests \#147 and \#179 in ~\cite{s2n}} were found in Amazon's s2n library~\cite{s2n}soon after its release with the second exploiting a timing-related vulnerability introduced when fixing the first.
 
-In this work, Almeida et. al~\cite{almeida} propose using formal methods to \emph{automatically} verify whether a program runs in constant-time. 
-In particular, they provide a precise framework to model constant-time properties(~\secref{prelimnaries}), a sound and complete reduction of constant-timedness of input programs to assertion safety of a self-product(~\secref{body}) and design, evaluate an automated tool, \texttt{ct-verif}, that verifies the constant-timedness of LLVM implementations of cryptographic algorithms from widely used libraries within seconds(~\secref{eval}). 
+In this work, Almeida et. al~\cite{almeida} propose using formal methods to \emph{automatically} verify whether a program runs in constant time. 
+In particular, they provide a precise framework to model constant-time properties(~\secref{prelimnaries}), a sound and complete reduction of constant-timeliness of input programs to assertion safety of a self-product(~\secref{body}) and design, evaluate an automated tool, \texttt{ct-verif}, that verifies the constant-timeliness of LLVM implementations of cryptographic algorithms from widely used libraries within seconds(~\secref{eval}). 

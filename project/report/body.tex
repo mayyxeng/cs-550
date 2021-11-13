@@ -60,7 +60,7 @@ Note, this program is \emph{not constant-time secure} since the branches on line
 The authors reduce the constant-time security of the original program ($P$) to the assertion safety of a second program ($Q$) that is the \emph{self-product} of $P$.
 Said differently, $Q$ is a program in which two abstract executions of $P$ take place simultaneously, with the two executions only differing in the value of \emph{secret} inputs and outputs. 
 \figref{rules}~.a shows how such a self-product can be constructed ($\hat{p}$ is the program $p$ with all variables renamed).
-First, each public input is assumed equal in both executions, then a guard and instrumentation are recursively applied to each subprogram. 
+First, each public input is assumed to be equal in both executions, then a guard and instrumentation are recursively applied to each subprogram. 
 The guards assert the equality of leakage functions for each subprogram $p$ and its variable-renaming $\hat{p}$.
 The essence of the transformation lies in the instrumentation (~\figref{rules}~.b) which reduces constant-time security to assertion safety. 
 The authors formalize this reduction from constant-time security to safety in Coq and prove that it is sound for all safe input programs (i.e., a security verdict is always correct) and complete for programs where information about public outputs is not taken into consideration in the security analysis (i.e., an insecurity verdict is always correct).
@@ -81,11 +81,10 @@ The authors formalize this reduction from constant-time security to safety in Co
 The resultant program is instrumented with assertions to ensure leakage remains the same at
 every step of execution.
 Since \texttt{l\_idx} is a private input to the program, its renaming cannot be assumed equal.
-Consequently, the assertion on line $8$ fails, demonstrating that assertions in the self-product do not hold if the given program does not run in constant-time.
+Consequently, the assertion on line $8$ fails, demonstrating that assertions in the self-product do not hold if the given program does not run in constant time.
 
 \begin{figure}[h]
     \centering\resizebox{1.2\columnwidth}{!}{\lstinputlisting[language=MySketch]{prod.c}}
     \caption{Example program product of the sub-array copy program.}
     \label{fig:example_prod}
 \end{figure}
-
