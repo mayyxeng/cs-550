@@ -1,13 +1,13 @@
 \section{Evaluation}
 \label{sec:eval}
 
-The authors implement the algorithm outlined in \secref{body} in a publicly available tool called \texttt{ct-verif}~\cite{ct-verif-github}. 
-\texttt{ct-verif} takes as input the LLVM implementation of a cryptographic algorithm and outputs either proof of constant-timeliness or a counter-example showing how the property is violated. 
-Under the covers, \texttt{ct-verif} leverages the SMACK verification tool~\cite{smack} to translate the LLVM to Boogie~\cite{boogie} code. 
-It then performs its reduction on the Boogie code and applies the Boogie verifier to the resulting program. 
+The authors implement the algorithm outlined in \secref{body} in a publicly available tool called \ctVerif~\cite{ct-verif-github}.
+\ctVerif takes as input the LLVM implementation of a cryptographic algorithm and outputs either proof of constant-timeliness or a counter-example showing how the property is violated.
+Under the covers, \ctVerif leverages the SMACK verification tool~\cite{smack} to translate the LLVM to Boogie~\cite{boogie} code.
+It then performs its reduction on the Boogie code and applies the Boogie verifier to the resulting program.
 
-The authors evaluate their tool on examples from widely used cryptographic libraries including OpenSSL~\cite{openssl}, NaCl~\cite{nacl}, FourQlib~\cite{fourqlib} and \texttt{curve25519-donna}~\cite{donna}. The examples include encryption algorithms, hash functions, fixed-point arithmetic and elliptic-curve arithmetic. 
+The authors evaluate their tool on examples from widely used cryptographic libraries including OpenSSL~\cite{openssl}, NaCl~\cite{nacl}, FourQlib~\cite{fourqlib} and \texttt{curve25519-donna}~\cite{donna}. The examples include encryption algorithms, hash functions, fixed-point arithmetic and elliptic-curve arithmetic.
 The size of the examples ranges from $50-1200$ lines of C code.
 
-The authors demonstrate that \texttt{ct-verif} is typically able to verify that the examples are constant-time secure within seconds---most functions require $\leq 30s$ while the largest function requires $273s$. 
-These results show that \texttt{ct-verif} can be easily integrated into the day-to-day development of cryptographic algorithms. 
+The authors demonstrate that \ctVerif is typically able to verify that the examples are constant-time secure within seconds---most functions require $\leq 30s$ while the largest function requires $273s$.
+These results show that \ctVerif can be easily integrated into the day-to-day development of cryptographic algorithms.
