@@ -25,7 +25,7 @@ In fact, \texttt{dudect}'s method of operation lends itself well to a graphical 
 Indeed, repetitively running the program with fixed/random private inputs and plotting the CDF of its average execution time generates curves that should perfectly overlap if the program is constant-time\footnote{We modified \texttt{dudect} to automatically extract and plot its timing information.}.
 Figure~\ref{fig:dudect_donna} shows an example of running the \texttt{dudect} method on two implementations of \texttt{curve25519} that differ in the constant-time property.
 
-\begin{figure}[h]
+\begin{figure}[h!]
   \centering
   \subfigure[Non-CT implementation]{
       \includegraphics[width=0.45\textwidth]{./figs/donnabad_cdf.png}
@@ -33,11 +33,23 @@ Figure~\ref{fig:dudect_donna} shows an example of running the \texttt{dudect} me
   \subfigure[CT implementation] {
       \includegraphics[width=0.45\textwidth]{./figs/donnagood_cdf.png}
   }\label{fig:dudect_donnagood}
-  \caption{CDF timing behavior of a non-CT vs CT implementation of elliptic curve.}
+  \caption{CDF timing behavior of a non-CT vs CT implementation of an elliptic curve.}
   \label{fig:dudect_donna}
 \end{figure}
 
-% \verb+curve25519+
+Figure~\ref{fig:dudect_sha} in turn shows how an example that a formal tool could not prove as constant-time \emph{could} be constant-time since the execution curves overlap perfectly.
+
+\begin{figure}[h!]
+  \centering
+  \subfigure[SHA256]{
+      \includegraphics[width=0.45\textwidth]{./figs/sha256_cdf.png}
+  }\label{fig:dudect_sha256}
+  \subfigure[SHA512] {
+      \includegraphics[width=0.45\textwidth]{./figs/sha512_cdf.png}
+  }\label{fig:dudect_sha512}
+  \caption{CDF timing behavior of \texttt{libsodium}'s SHA256/SHA512 implemenation. Both are statistically constant-time.}
+  \label{fig:dudect_sha}
+\end{figure}
 
 % The \texttt{ct-verif} tool was released in 2016, two years before widespread micro-architectural side-channel attacks like Meltdown~\cite{meltdown} and Spectre~\cite{spectre} were reported.
 % Formal techniques are, in theory, able to detect whether a program is vulnerable to certain categories of side-channel attacks.
