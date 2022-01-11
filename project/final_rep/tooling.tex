@@ -162,10 +162,10 @@ bitcode to verify the SHA-1 function. Transformation from bitcode to bpl
 resulted in over 70GiB of memory usage and did not terminate after 30 minutes.
 
 
-Unlike the functions verified in the paper, neither of them are isolated
-function in which the bitcode only has the \emph{used} code. It seems like SMACK
-transforms the whole program irrespective of the target function. This approach
-limits the usability of \ctVerif since verifications requires a good
+Unlike the functions verified in the paper, these two functions them are
+isolated and the bitcode given to \ctVerif contains unused code. It seems like
+SMACK transforms the whole program irrespective of the target function. This
+approach limits the usability of \ctVerif since verifications requires a good
 understanding of the underlying library structure to be able to isolate the used
 code.
 
