@@ -1,0 +1,16 @@
+\section{Takeaways}
+
+This work formalizes the previously imprecise notion of constant-time programming, in addition to providing a publicly available and fully automated tool that can verify (in seconds) whether implementations of cryptographic algorithms from off-the-shelf libraries adhere to the notion of constant-time. 
+This is, undoubtedly, an impressive result.
+
+That said, the paper does have a few weaknesses: \\
+\indent Firstly, \texttt{ct-verif} requires LLVM implementations which is problematic for two reasons.
+Cryptographic code is often written directly in assembly due to the performance benefits. For instance, Vale~\cite{vale} demonstrates that OpenSSL assembly implementations outperform their C counterparts by up to 50\%.
+Further, verifying that LLVM code runs in constant time does not guarantee that the executable runs in constant time~\cite{KaufmannPVV16}. To the authors' credit, they do discuss such scenarios.
+
+Secondly, the formalization of constant-time as presented by the papers is significantly weakened by the advent of micro-architectural attacks (~\cite{meltdown, spectre}). To be fair to the authors, such attacks became popular after their paper was published. Further, one could argue that such attacks are not a property of the implementation, and are a menace that the underlying hardware/operating system must tackle.
+
+Finally, the authors do not present a single example where their ``automated'' approach fails to verify constant-timeliness in reasonable time. As such, the results look a little too good to be true. 
+
+During the course of this project, we plan to investigate the first and third aspects of \texttt{ct-verif} more thoroughly. 
+Specifically, we aim to identify where the tool falls short and also patch it with LLVM-passes that can preserve constant timeliness. 

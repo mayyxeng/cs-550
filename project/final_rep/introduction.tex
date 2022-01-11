@@ -1,0 +1,14 @@
+\section{Introduction}
+% Say a few general words about the general context of the paper you chose. Explain why the topic is of interest, or where it can be applied. If it is about a piece of software or artifact, give a description of it. State the main result of the paper and why it is new or how it improves on previous state of knowledge. You can cite references using, for example \cite{BibliographyManagementLaTeX} and make a succint presentation of the organisation of your report.
+
+Timing attacks---attacks that extract secrets by measuring timing differences under adversary-controlled inputs---on cryptographic libraries~\cite{bernstein_cache_timing_attacks, dsa_exponentiations} pose a major challenge to information security today. 
+Popular cryptographic libraries (e.g., OpenSSL~\cite{openssl}) run on millions of devices; hence a vulnerability in such a library has the potential to compromise all such devices simultaneously.
+
+Constant-Time programming is the most effective software countermeasure against such attacks.
+Constant-time programming involves rewriting a program such that (1)~its control flow does not depend on program secrets, (2)~it does not perform any secret-dependent memory accesses, and (3)~it does not use variable-latency instructions to operate on secrets.
+
+However, writing and/or reasoning about constant-time programs is challenging and prone to errors since it typically involves the use of low-level programming languages and programming practices that deviate from software engineering principles.
+For example, two constant-time violations\footnote{See pull requests \#147 and \#179 in ~\cite{s2n}} were found in Amazon's s2n library~\cite{s2n} soon after its release with the second exploiting a timing-related vulnerability introduced when fixing the first.
+
+In this work, Almeida et. al~\cite{almeida} propose using formal methods to \emph{automatically} verify whether a program runs in constant time. 
+To do so, they provide a precise framework to model constant-time properties(~\secref{prelimnaries}), a sound and complete reduction of constant-timeliness of input programs to assertion safety of a self-product(~\secref{body}) and design, evaluate an automated tool that verifies the constant-timeliness of cryptographic algorithms from widely used libraries within seconds(~\secref{eval}). 
