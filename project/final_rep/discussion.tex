@@ -1,15 +1,15 @@
-\section{Discussion}\label{sec:discussion}
+\section{Does constant-time hold for binaries?}\label{sec:discussion}
 
 \ctVerif operates at the level of LLVM bitcode and can therefore only formally attest to whether a program's
 representation as bitcode is constant-time.
-
 Translating a bitcode program into binary is a straightforward process and is generally a simple one-to-one mapping between bitcode instructions and assembly.
 In theory an assembly program should therefore preserve the constant-time property if the source LLVM bitcode is proven to be constant-time.
 
 However, while this argument does hold for simple RISC-like ISAs, it does not for complex CISC-like machines like the x86 architecture.
 There is in reality no true ``x86'' machine as no x86 processor actually executes the CISC instructions it receives as input directly.
 Instead, these CISC instructions are decomposed into RISC-like $\mu$Ops before being scheduled for execution on a RISC-like backend.
-This decomposition is handled transparently by microcode sequencers in the CPU's frontend and is not under the control of the user as microcode updates can change instruction behavior.
+This decomposition is handled transparently by microcode sequencers in the CPU's frontend and is not under the control of the user.
+Microcode updates can also change instruction behavior in ways that conflict with a formal tool's prior modelling.
 Asserting that a constant-time LLVM bitcode program remains constant-time when translated to x86 assembly is unclear as users have no way of knowing how an instruction is decoded into $\mu$Ops.
 
 The \texttt{dudect} project appeared after \ctVerif and suggested the only way to decide whether a program is constant-time or not is to actually run it and time its execution~\cite{dudect}.
@@ -20,10 +20,13 @@ However, machines do not have deterministic execution times due to caches and OS
 If yes, then the program is \emph{possibly} constant-time. If not, then the program is \emph{definitely not} constant-time.
 Combined with a formal constant-time proof obtained from \ctVerif, the mechanism proposed by \texttt{dudect} can validate that the $\mu$Op decomposition of a program is constant-time.
 
-We evaluated the \texttt{dudect} method on 9 examples from the \ctVerif paper and were able to validate their constant-time property.
 In fact, \texttt{dudect}'s method of operation lends itself well to a graphical validation when a constant-time violation is detected.
-Indeed, repetitively running the program with fixed/random private inputs and plotting the CDF of its average execution time generates curves that should perfectly overlap if the program is constant-time\footnote{We modified \texttt{dudect} to automatically extract and plot its timing information.}.
-Figure~\ref{fig:dudect_donna} shows an example of running the \texttt{dudect} method on two implementations of \texttt{curve25519} that differ in the constant-time property.
+Indeed, repetitively running the program with fixed/random private inputs and plotting the CDF of its average execution time generates curves that should perfectly overlap if the program is constant-time.
+We modified \texttt{dudect} to automatically extract and plot this timing information.
+
+We ported the 9 examples from the \ctVerif paper to use \texttt{dudect}'s test harness and were able to validate their constant-time property.
+We only show 2 examples below that show what a non-CT and a CT CDF of the same algorithm should look like as all other examples in \ctVerif and \texttt{dudect} are constant-time and their curves overlap perfectly.
+Figure~\ref{fig:dudect_donna} shows an example of running the \texttt{dudect} method on two implementations of \texttt{curve25519} that differ in the constant-time property (that \ctVerif was also able to formally verify).
 
 \begin{figure}[h!]
   \centering
@@ -37,7 +40,10 @@ Figure~\ref{fig:dudect_donna} shows an example of running the \texttt{dudect} me
   \label{fig:dudect_donna}
 \end{figure}
 
-Figure~\ref{fig:dudect_sha} in turn shows how an example that a formal tool could not prove as constant-time \emph{could} be constant-time since the execution curves overlap perfectly.
+Figure~\ref{fig:dudect_sha} in turn shows how an example that \ctVerif could not prove as constant-time \emph{could} be constant-time since the execution curves overlap perfectly.
+The examples shown here are \texttt{libsodium}'s \codetext{sha256} and \codetext{sha512} implementations which the \ctVerif paper claimed could prove the constant-time property for, but which we were not able to replicate as discussed in \secref{tooling}
+Running these examples through \texttt{dudect} suggests that they are constant-time as their CDF execution time
+curves perfectly overlap.
 
 \begin{figure}[h!]
   \centering
@@ -50,6 +56,9 @@ Figure~\ref{fig:dudect_sha} in turn shows how an example that a formal tool coul
   \caption{CDF timing behavior of \texttt{libsodium}'s SHA256/SHA512 implemenation. Both are statistically constant-time.}
   \label{fig:dudect_sha}
 \end{figure}
+
+In summary, we find \texttt{dudect}'s statistical methodology is a good way to translate a formal tool's proof of
+constant-timeness to a probable guarantee on he end-binary that runs on a processor.
 
 % The \ctVerif tool was released in 2016, two years before widespread micro-architectural side-channel attacks like Meltdown~\cite{meltdown} and Spectre~\cite{spectre} were reported.
 % Formal techniques are, in theory, able to detect whether a program is vulnerable to certain categories of side-channel attacks.
