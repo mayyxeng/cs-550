@@ -1,57 +1,91 @@
-\section{Formalization of Constant Time}
-\label{sec:prelimnaries}
+\section{Background}
+\label{sec:background}
 
-% State the technical details that are necessary to understand the paper. It is generally a collection of definitions, concepts and notations with potentially a few preliminary results. It can be, for example the mathematical framework in which the topic of your paper is expressed. In particular, fix the notation you will be using for your review.
+In this section, we provide a succint summary of \ctVerif, in particular its definition of constant time (\secref{background-ct}), how the tool verifies that a program is constant-time (\secref{background-self-product}) and finally its implementation (\secref{background-tool}). 
+Here we restrict ourselves to describing only those details that are needed for the rest of the report; detailed outlines of each of the above can be found in our midterm report~\cite{midterm-report}.
 
-Here we summarize the authors' formalization of constant-timeliness for a simple, high-level, structured programming language.
-\figref{syntax} lists the language's syntax.
-The operational semantics for the language's primitives are standard and are listed in \figref{semantics} for reference.
-In a nutshell:
-\begin{itemize}
-  \item The authors consider the semantics of ``while programs'', i.e., programs where looping is only possible through the ``while'' language construct.
-  \item They do not specify the syntax of expressions and only assume they are deterministic and side-effect free.
-  \item The language is enriched with arrays and assert/assume statements. Array expressions cannot be nested.
-\end{itemize}
+\subsection{Defining Constant-Time Execution}
+\label{sec:background-ct}
 
-\begin{figure}[h!]
-\centering
-\resizebox{0.65\columnwidth}{!}{\includegraphics{figs/fig_5.pdf}}
- \caption{Syntax of language used for formalization}
- \label{fig:syntax}
+For a program to be ``constant-time'', it must not leak any secret data that can then be identified/recovered by an adversary using timing differences. 
+
+In their work, Almeida et. al~\cite{almeida} consider three sources of leakage:
+{(1)}~branches which can leak the evaluated branch conditions, 
+{(2)}~memory operations which can leak the address accessed in load and store instructions due to cache-based timing differences.
+{(3)}~instructions whose execution time may vary on modern processors based on the provided operands (e.g., integer divide on x86 processors~\cite{intel-manual}). Here onwards, we refer to such instructions as ``variable latency instructions''.
+
+In summary, Almeida et. al~\cite{almeida} define a program as constant time if it does not 
+{(1)}~branch based on a secret,
+{(2)}~access a secret-dependent memeory addresss, and 
+{(3)}~use a secret-dependent value as an operand for variable latency instructions.
+For the formal definition used by Almeida et. al~\cite{almeida}, please refer to our midterm report~\cite{midterm-report}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Verifying Constant-Timeliness}
+\label{sec:background-self-product}
+
+We now illustrate using an example how \ctVerif verifies that a program is indeed constant-time; \figref{example} describes the example. 
+The program in question copies a sub-array of length \texttt{sub\_len}, starting at index \texttt{l\_idx}, from array \texttt{in}
+to array \texttt{out}.
+Both that the starting addresses and lengths of both arrays are publicly observable but the value of \texttt{l\_idx} and the array contents must be kept a secret.
+Note, this program is \emph{not constant-time secure} since the branches on line 5 clearly leak information about \texttt{l\_idx}.
+
+\begin{figure}[h]
+    \centering\resizebox{0.7\columnwidth}{!}{\lstinputlisting[language=C]{example.c}}
+    \caption{Running example - sub-array copy}
+    \label{fig:example}
 \end{figure}
 
-\begin{figure}[h!]
-\centering
-\resizebox{0.65\columnwidth}{!}{\includegraphics[width=\columnwidth]{figs/fig_6.pdf}}
- \caption{Operational semantics of language in \figref{syntax}}
- \label{fig:semantics}
+To verify that a program runs in constant-time, \ctVerif verifies that its \emph{self-product} is \emph{safe w.r.t leakage assertions.}
+
+The \emph{self-product} of a program $P$ is a second program $Q$ in which two abstract executions of $P$ take place simultaneously, with the two executions only differing in the value of \emph{secret} inputs and outputs. Said differently, $Q$ interleaves $P$ with a copy of itself and ties all public inputs of $P$ together in both executions.
+
+\figref{example_prod} illustrates the self-product for our running example; focus now on lines $1-5$ and $12-14$. We first see that all public inputs are tied together (lines $1-4$) and assumed equal in both executions of $P$. Then both executions proceed in lock-step with each computation performed in both programs simultaneously (lines $5,12-14$).
+
+\ctVerif utilizes the fact that the two executions differ only in the values of secret inputs to reduce constant-timeliness to safety w.r.t leakage assertions. For each of the categories of leakage it considers, \ctVerif inserts into the self-product an assertion that the leakage is the same in both executions. If the assertion holds, then the information leaked was publicly available (since only public inputs are assumed equal), if not, then the leakage differs based on the secret input which violated constant-timeliness.
+
+\figref{example_prod} illustrates how assertion safety verifies constant-timeliness; focus now on lines $6,8,11$. Each of these three lines contain leakage assertions---line $6$ pertains to the branch on line $7$, line $8,9$ the branch on line $10$ and line $11$ the memory access on line $12$.
+When a source of leakage operates only on public inputs (e.g., line $7$), the corresponding assertion holds (line $6$). 
+However, when constant-time is violated and a source of leakage operates on secret-dependent values (line $10$), the corresponding assertion (line $8,9$) cannot be proved. 
+Hence, if the self-product is free of leakage-assertion failures, it must be constant time.
+
+\begin{figure}[h]
+    \centering\resizebox{0.9\columnwidth}{!}{\lstinputlisting[language=MySketch]{prod.c}}
+    \caption{Example program product of the sub-array copy program.}
+    \label{fig:example_prod}
 \end{figure}
 
-\module{Modeling Program Execution:}
-A state $s$ maps variables $x$ and indices $i \in $ to values $s(x,i)$ and we use $s(e)$ to denote the value of expression $e$ in state $s$.
-The distinguished error state $\bot$ represents a state from which no transition is enabled. A \emph{configuration} $c = \langle s,p \rangle$ is a state $s$ along with a program $p$ to be executed, and an \emph{execution} is a sequence $c_{1},c_{2},...c_{n}$ of configurations such that  $c_{i} \to c_{i+1}$ for $0<i<n$. The execution is \emph{safe} unless $c_{n} = \langle\bot,\mathunderscore\rangle$; it is \emph{complete} if $c_{n} = \langle\mathunderscore,skip\rangle$; and it is an \emph{execution of program p} if $c_{1} = \langle\mathunderscore,p\rangle$. A program $p$ is \emph{safe} if all of its executions are safe.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Given a set of $X$ of program variables, two configurations $\langle s_1,
-\_\rangle$ and $\langle s_2, \_ \rangle$ are \textit{X-equivalent} when
-$\forall x \in X, i \in \mathbb{N}: s_1(x, i) = s_2(x, i)$. Executions
-$c_1 ... c_2$ and $c'_1 ... c'_n$ are initially \textit{X-equivalent} when
-$c_1$ and $c'_1$ are \textit{X-equivalent} and finally \textit{X-equivalent}
-when $c_n$ and $c'_n$ are \textit{X-equivalent}.
+\subsection{\ctVerif Implementation}
+\label{sec:background-tool}
 
-\module{Modeling Leakages:}
-A \emph{leakage model} $L$ maps program configurations $c$ to \emph{observations} $L(c)$, and extends to executions, mapping $c_{1},c_{2},...c_{n}$ to the \emph{observation} $L(c_{1},c_{2},...c_{n}) = L(c_{1})\cdot L(c_{2})\cdot\cdot\cdot L(c_{n})$. Two executions $\alpha$ and $\beta$ are \emph{indistinguishable} when $L(\alpha) = L(\beta)$.
+\ctVerif accepts two inputs---the C implementation of the program of interest and a simple proof harness which invokes the program and annotates its inputs as either public or secret.
+\figref{example_wrapper} illustrates the proof harness for our running example.
+Given these inputs, \ctVerif either proves that the program runs in constant time or provides sources of leakage that violate constant-time. 
 
-\module{Definition of Constant-Time Security:} \emph{A program p with a set $X_{i}$ of inputs declared publicly observable and a set $X_{o}$ of outputs declared publicly observable is constant-time secure when all of its initially $X_{i}$-equivalent and finally $X_{o}$-equivalent executions are executable.}
+\figref{ct-verif-flow} illustrates the underlying components of \ctVerif.
+The program and its harness are compiled down to \codetext{llvm} bitcode. The
+bitcodes are linked together and converted to \emph{Boogie Programming
+Language} (\codetext{.bpl}). Compilation down to \codetext{.bpl} is automated
+through \emph{SMACK}~\cite{smack}, but it is possible to customize the flow if
+needed and only rely on the the \codetext{bitcode}-to-\codetext{bpl} conversion
+of SMACK.
+The linked \codetext{bpl} files are then fed to \emph{BAM! BAM! Boogieman} which
+performs the key task of generating the self-product, and
+finally the self-product---which contains assertions and assumptions---is
+given to \emph{Boogie}~\cite{boogie} to verify assertion safety.
 
-\module{Sources of leakage considered:} The authors consider three leakage models in this work---{(1)}~branch-based leakage,
-{(2)}~memory access-based leakage, and
-{(3)~leakage based on variable-latency instructions.
+\begin{figure}[h]
+    \centering
+    \includegraphics[height=0.4\textheight]{figs/ct-verif-flow.pdf}
+    \caption{\ctVerif tool flow}
+    \label{fig:ct-verif-flow}
+\end{figure}
 
-Branch-based leakages expose the valuations of branch conditions. For instance, here are the leakage models for branches in the example high-level language---
-{(1)}~$\langle$ s, if e then $p_{1}$ else $p_{2}\rangle \mapsto s(e)$,
-{(2)~$\langle$ s, while e do p$\rangle \mapsto s(e)$
-
-Memory access-based leakages expose the addresses accessed in load and store instructions. In the simple language of while programs, this is equivalent to exposing the indexes to program variables read from and written to at each statement.
-
-Finally, the time required to execute an instruction may vary based on the provided operands on modern processors. For instance, integer division on x86 processors depends on the size of the two operands~\cite{intel-manual}). To account for such leakages, the authors add leakage models for all such instructions. Here, we only show the model for division - $\langle$ s, x = $e_{1}/e_{2}\rangle \mapsto sizeof(e_{1},e_{2})$
-
+\begin{figure}[h]
+    \centering\resizebox{0.7\columnwidth}{!}{\lstinputlisting[language=C]{code/example_wrapper.c}}
+    \caption{Proof harness for sub-array copy in \figref{example}.}
+    \label{fig:example_wrapper}
+\end{figure}
