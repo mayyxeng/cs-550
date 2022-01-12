@@ -1,0 +1,36 @@
+
+\begin{table}[h]
+  \centering
+  \def\arraystretch{1.3} % decent vertical padding
+  \resizebox{\columnwidth}{!}{
+	\begin{tabular}{|l|l|}
+		\hline
+		\textbf{Program}    & \textbf{Remarks} \\
+    \hline \hline                                               
+		OpenSSL 3.0 AES   & Verified that code runs in constant-time \\
+    \hline
+		OpenSSL 3.0 ChaCha   & Verified that code runs in constant-time          \\
+	  \hline 
+  	OpenSSL 3.0 ECDHE    & Verified that code runs in constant-time   \\
+		\hline
+    OpenSSL 3.0 MD5      & Verified that code runs in constant-time   \\
+		\hline
+    OpenSSL 3.0 MD4      & Verified that code runs in constant-time   \\
+		\hline
+    OpenSSL 3.0 Poly1305 & Verified that code runs in constant-time  \\
+    \hline  
+		OpenSSL 3.0 SHA-256  & Verified that code runs in constant-time \\
+    \hline 
+    \begin{tabular}[c]{@{}l@{}}OpenSSL 1.1 RSA\\  (CVE-2018-0737)\end{tabular}      & Reproduced cache-based leakage \\
+    \hline
+		libsodium ChaCha20   & Verified that code runs in constant-time \\
+    \hline
+    Tiny Encryption Algorithm (TEA)   & Verified that code runs in constant-time \\
+    \hline
+    Running example from \figref{example}   & Correctly identified branch-based leakage \\
+    \hline
+	\end{tabular}
+  }
+  \caption{Programs we tested \kt on.}
+  \label{tab:past_ct_bugs}
+\end{table}

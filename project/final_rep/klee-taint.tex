@@ -1,0 +1,35 @@
+\section{Overcoming Scalabity Issues with an Alternate Approach}
+\label{sec:klee-taint}
+
+Given that constructing self-products failed due to poor dead-code elimination, we implemented an alternative approach based on symbolic execution.
+The reasoning behind this was that actually stepping through and interpreting the program would ensure that only the relevant code is analyzed.
+Our tool takes the same two inputs as \ctVerif---C code containing the function of interest and a test harness that annotates inputs as public or secret.
+The main difference is that the C code can now also contain arbitrary dead code, unlike for \ctVerif.
+
+Our approach is fairly straightforward and combines two well known techniques---symbolic execution~\cite{symbex} and static dataflow analysis~\cite{dataflow}. Given the program of interest, our approach first assumes that all inputs (both private and public) are symbolic (and not concrete) variables. Then it executes the program of interest with these symbolic inputs, allowing it to explore all feasible paths through the code.
+While stepping through the code, it also propagates the ``secret'' taint using static dataflow analysis.
+Finally, when interpreting instructions corresponding to the leakages being considered, it adds assertions that checks if the leakage does not involve a secret-tainted value.
+If the tool can explore all paths through the code without assertion failures, the code is indeed constant time, if not, the assertion failure points to a constant-time violation just like in \ctVerif.
+
+Given that the two primary techniques underlying our tool are so well known, we were able to find an open-source tool (\kt~\cite{klee-taint-code}) that combines the two of them.
+We were able to use \kt off-the-shelf for symbolic execution and dataflow analysis.
+We only had to add the assertions to check for secret dependent leakages to \kt's LLVM interpreter and this took only 16 LOC.
+Note, we used \kt in direct taint mode which propagates the taint only for direct operations (e.g., assignments, arithmetic operations, etc).
+
+To evaluate \kt's scalability, we used it to verify the constant-timeliness for $7$ top-level cryptographic primitives from OpenSSL 3.0's libcrypto, and $3$ programs analyzed by \ctVerif.
+To ensure we had both positive and negative examples, we included the running example and a previously patched vulnerability in OpenSSL.
+Note, \ctVerif does not scale to any of the $7$ programs from OpenSSL.
+
+\input{klee-taint-results}
+
+\tabref{past_ct_bugs} lists the programs we used. For each of the above programs, \kt is able to either verify constant-timeliness or provide a source of leakage within minutes.
+For all programs except ECHDE \kt terminates its analysis in <5 mins.
+ECHDE takes 22 mins since it is the most complex algorithm and the only one that involves symmetric key generation.  
+
+\textbf{Limitations:} A symbolic execution-based tool is not a panacea and has its own limitations.  
+Since symbolic execution explores all paths through the code in a naive manner, it does not scale well to some kinds of cryptographic code, particularly code with loops.
+Loops with a constant bound can be handled properly, but those that could run an arbitrary number of times
+cause path explosion during symbolic execution.
+For instance, generating a prime number by repeatedly generating a likely prime and checking whether
+it really is prime could, in theory, never terminate. Symbolic execution will thus not terminate either.
+This is an operation that can happen during key generation if we model the source of randomness as symbolic.
