@@ -1,6 +1,6 @@
 \section{Does constant-time hold for binaries?}\label{sec:discussion}
 
-\ctVerif operates at the level of LLVM bitcode and can therefore only formally attest to whether a program's
+One shortcoming of both \ctVerif and \kt is that they both operate only at the level of LLVM bitcode and can therefore only formally attest to whether a program's
 representation as bitcode is constant-time.
 Translating a bitcode program into binary is a straightforward process and is generally a simple one-to-one mapping between bitcode instructions and assembly.
 In theory an assembly program should therefore preserve the constant-time property if the source LLVM bitcode is proven to be constant-time.
@@ -41,7 +41,7 @@ Figure~\ref{fig:dudect_donna} shows an example of running the \texttt{dudect} me
 \end{figure}
 
 Figure~\ref{fig:dudect_sha} in turn shows how an example that \ctVerif could not prove as constant-time \emph{could} be constant-time since the execution curves overlap perfectly.
-The examples shown here are \texttt{libsodium}'s \codetext{sha256} and \codetext{sha512} implementations which the \ctVerif paper claimed could prove the constant-time property for, but which we were not able to replicate as discussed in \secref{tooling}
+The examples shown here are \texttt{libsodium}'s \codetext{sha256} and \codetext{sha512} implementations which the \ctVerif paper claimed could prove the constant-time property for, but which we were not able to replicate as discussed in \secref{reproducing-results}.
 Running these examples through \texttt{dudect} suggests that they are constant-time as their CDF execution time
 curves perfectly overlap.
 

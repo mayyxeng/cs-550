@@ -10,10 +10,16 @@ Constant-time programming involves rewriting a program such that (1)~its control
 However, writing and/or reasoning about constant-time programs is challenging and prone to errors since it typically involves the use of low-level programming languages and programming practices that deviate from software engineering principles.
 For example, two constant-time violations\footnote{See pull requests \#147 and \#179 in ~\cite{s2n}} were found in Amazon's s2n library~\cite{s2n} soon after its release with the second exploiting a timing-related vulnerability introduced when fixing the first.
 
-% In this work, Almeida et. al~\cite{almeida} propose using formal methods to \emph{automatically} verify whether a program runs in constant time.
-% To do so, they provide a precise framework to model constant-time properties~(\secref{prelimnaries}), a sound and complete reduction of constant-timeliness of input programs to assertion safety of a self-product~(\secref{body}), and design \& evaluate an automated tool that verifies the constant-timeliness of cryptographic algorithms from widely used libraries~(\secref{eval}).
+Prior work (Almeida et. al~\cite{almeida}) propose using formal methods to \emph{automatically} verify whether a program runs in constant time.
+To do so, they provide a precise framework to model constant-time properties, a sound and complete reduction of constant-timeliness of input programs to assertion safety of a self-product, and design \& evaluate an automated tool that verifies the constant-timeliness of cryptographic algorithms from widely used libraries.
+We provide a summary of this prior work in \secref{background}.
 
+In this work, we go beyond the work of Almeida et. al in three ways.  
 \begin{itemize}
-\item What did the background paper do?
-\item What we did in this project as contributions. 
+	\item We reproduced their published results and in doing so identified a limitation that prevents it from scaling to more complex, but ubiquitously-used cryptographic programs (\secref{reproducing-results}).
+	\item We showed that an alternate approach might be a better fit for the domain of cryptographic programs by implementing and evaluating an approach based on exhaustive symbolic execution and static dataflow analysis (\secref{klee-taint}).
+	\item We showed (using existing tools) how to lower the guarantees provided by tools that analyze intermediate representations to the actual binary that runs on hardware (\secref{discussion}).
 \end{itemize}
+
+
+All of our code and results are publicly available~\cite{code-repo}.
