@@ -107,13 +107,14 @@ we will follows up on in \secref{klee-taint}.
 
 \subsection{Scalability of \ctVerif}
 
-We noticed that they were only simple leaf functions.
-Give code sizes.
-Show comment.
+While reproducing \ctVerif's published results, we noticed that the functions under test always had the following characteristics---they needed to be clearly isolated functions in code, they were always of medium complexity (<1k LOC) and were often internal functions as opposed to client-facing functions. 
+For example, for the ubiquitously used AES encryption algorithm~\cite{aes}, \ctVerif only verifies individual functions that correctly pad and unpad cipherblocks, as opposed to testing the top-level encryption, decryption functions.
+In fact, on closer inspection, we noticed that the authors admit to this fact in the code with a comment that states that verifying more complex, but widely used functions such as md5, sha1 is beyond Smack's abilities~\cite{scalability-comment}.
 
-We wanted to investigate if ... 
+ 
+To evaluate whether \ctVerif indeed scaled to more complex cryptographic functions beyond the ones tested in the paper, we performed two experiments.
 
-To evaluate the scalability of this tool we first tried to verify
+First, we tried to verify
 constant-timeness of function \codetext{s2n\_verify\_cbc} from Amazon's
 \codetext{libs2n} library. The test harness for this function is included as one of the
 examples in the \ctVerif repository but it had a simple bug where the test
@@ -127,13 +128,13 @@ generate the program product. Unfortunately. \codetext{llvml2pl} resulted in
 many warnings regarding memory safety and self-product program generation failed
 to due an resolved reference.
 
-In another attempt, we compiled the OpenSSL library down to \codetext{llvm}
+Since the above attempt didn't give us a clear picture, we next compiled the OpenSSL library~\cite{openssl} down to \codetext{llvm}
 bitcode to verify the SHA-1 function. Transformation from bitcode to bpl
 resulted in over 70GiB of memory usage and did not terminate after 30 minutes.
 
 Unlike the functions verified in the paper, these two functions are not
 isolated and the bitcode given to \ctVerif contains unused code. It seems like
 SMACK transforms the whole program irrespective of the target function. This
-approach limits the usability of \ctVerif since verifications requires a good
+approach limits the usability of \ctVerif since verification requires a good
 understanding of the underlying library structure to be able to isolate the used
-code.
+code which is often extremely tedious in large codebases.
