@@ -23,10 +23,10 @@ Note, \ctVerif does not scale to any of the $7$ programs from OpenSSL.
 \input{klee-taint-results}
 
 \tabref{past_ct_bugs} lists the programs we used. For each of the above programs, \kt is able to either verify constant-timeliness or provide a source of leakage within minutes.
-For all programs except ECHDE \kt terminates its analysis in <5 mins.
-ECHDE takes 22 mins since it is the most complex algorithm and the only one that involves symmetric key generation.  
+For all programs except ECHDE \kt terminates its analysis in $<$ 5 mins.
+ECHDE takes 22 mins since it is the most complex algorithm and the only one that involves symmetric key generation.
 
-\textbf{Limitations:} A symbolic execution-based tool is not a panacea and has its own limitations.  
+\textbf{Limitations:} A symbolic execution-based tool is not a panacea and has its own limitations.
 Since symbolic execution explores all paths through the code in a naive manner, it does not scale well to some kinds of cryptographic code, particularly code with loops.
 Loops with a constant bound can be handled properly, but those that could run an arbitrary number of times
 cause path explosion during symbolic execution.
